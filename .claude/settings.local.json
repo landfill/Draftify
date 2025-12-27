@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(claude mcp add:*)",
+      "WebFetch(domain:kiki-lights.vercel.app)"
+    ]
+  }
+}
