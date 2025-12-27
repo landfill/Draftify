@@ -57,7 +57,7 @@ Sub-Agents (specialized workers)
    - process-generator → `process-flow.md`
 
 5. **Phase 3.5**: Quality validation
-   - quality-validator checks against `auto-draft-guideline.md`
+   - quality-validator checks against `docs/design/auto-draft-guideline.md`
 
 6. **Phase 4**: Document generation
    - Separate `/ppt-generator` skill (not yet implemented)
@@ -68,24 +68,24 @@ Sub-Agents (specialized workers)
 
 ### Must Read First
 
-1. **service-design.md** - Complete system architecture
+1. **docs/design/service-design.md** - Complete system architecture
    - Section 2: System Architecture (Skill + Agent layers)
    - Section 3: Agent Structure (hierarchy and responsibilities)
    - Section 7: Error Handling & Workflow Control (orchestration logic)
    - Appendix C: Implementation Checklist
 
-2. **auto-draft-guideline.md** - Output specification
+2. **docs/design/auto-draft-guideline.md** - Output specification
    - 10 standard sections for generated documents
    - Required fields, writing standards, ID schemes (POL-001, SCR-001)
    - All agents reference this for output formatting
 
-3. **prd.md** - Product requirements
+3. **docs/requirements/prd.md** - Product requirements
    - Input types, output formats, success criteria
    - Non-functional requirements (30min timeout, partial success handling)
 
 ### Implementation Priority
 
-Per `service-design.md` Appendix C:
+Per `docs/design/service-design.md` Appendix C:
 1. Chrome DevTools MCP setup
 2. `/auto-draft` Skill (thin wrapper)
 3. `auto-draft-orchestrator` Main Agent prompt
@@ -108,7 +108,7 @@ Per `service-design.md` Appendix C:
 **Solution**:
 - Skill = ~100 lines, argument validation, calls Main Agent via Task tool
 - Main Agent = independent 30min context, Phase 1-4 control, sub-agent lifecycle
-- Rationale documented in conversation leading to final `service-design.md` revision
+- Rationale documented in conversation leading to final `docs/design/service-design.md` revision
 
 ### Agent Dependencies
 
@@ -143,7 +143,7 @@ Per `service-design.md` Appendix C:
 ```
 
 ### analyzed-structure.json
-See `service-design.md` Appendix B for complete schema including:
+See `docs/design/service-design.md` Appendix B for complete schema including:
 - `project`: metadata
 - `glossary`: term definitions
 - `policies`: rules with POL-* IDs
@@ -160,7 +160,7 @@ outputs/<project-name>/
 ├─ sections/
 │  ├─ 06-policy-definition.md
 │  ├─ 08-screen-definition.md
-│  └─ ... (per auto-draft-guideline.md)
+│  └─ ... (per docs/design/auto-draft-guideline.md)
 ├─ validation/
 │  └─ validation-report.md
 └─ final-draft.pptx (or .html fallback)
@@ -173,8 +173,8 @@ outputs/<project-name>/
 ### Agent Prompts
 
 When creating sub-agent prompts:
-1. Reference `auto-draft-guideline.md` Section X for output format
-2. Reference `analyzed-structure.json` schema from `service-design.md` Appendix B
+1. Reference `docs/design/auto-draft-guideline.md` Section X for output format
+2. Reference `analyzed-structure.json` schema from `docs/design/service-design.md` Appendix B
 3. Include retry strategy from Section 7.3
 4. Specify tools: Read, Write, Grep, Glob (no Bash unless MCP interaction)
 5. Define clear success/failure criteria
@@ -212,7 +212,7 @@ When creating sub-agent prompts:
 4. Then incrementally add Phase 2-4
 
 ### Quality Checks
-- All section .md files against `auto-draft-guideline.md`
+- All section .md files against `docs/design/auto-draft-guideline.md`
 - Policy ID references (POL-*) consistent across files
 - Screen ID references (SCR-*) consistent across files
 - No broken image links in screen definitions
@@ -244,7 +244,7 @@ From `.claude/agents/agent-architect.md`:
 
 ## Next Steps for Implementation
 
-See `service-design.md` Appendix C for full checklist. Priority order:
+See `docs/design/service-design.md` Appendix C for full checklist. Priority order:
 
 1. Verify Chrome DevTools MCP availability and capabilities
 2. Create `.claude/skills/auto-draft/skill.md` (thin wrapper)
@@ -257,6 +257,6 @@ See `service-design.md` Appendix C for full checklist. Priority order:
 ## References
 
 - **Design rationale**: Git commit history and conversation context
-- **Output standards**: `auto-draft-guideline.md` (10 sections, ID schemes)
-- **Technical specs**: `service-design.md` (architecture, agents, error handling, schemas)
-- **Business context**: `prd.md` (problem definition, success criteria)
+- **Output standards**: `docs/design/auto-draft-guideline.md` (10 sections, ID schemes)
+- **Technical specs**: `docs/design/service-design.md` (architecture, agents, error handling, schemas)
+- **Business context**: `docs/requirements/prd.md` (problem definition, success criteria)
