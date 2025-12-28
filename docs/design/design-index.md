@@ -50,6 +50,17 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
 
 ---
 
+### 4. [auto-draft-guideline.md](./auto-draft-guideline.md)
+**내용**: 출력 문서 표준 규격
+- 10개 표준 섹션 정의 (표지, 변경 이력, 목차, 서비스 개요, 용어 정의, 정책 정의, 프로세스 흐름, 화면 정의, API 명세, 부록)
+- ID 명명 규칙 (POL-*, SCR-*, API-*)
+- 섹션별 필수 항목 및 작성 기준
+- 모든 generator 에이전트의 출력 형식 기준
+
+**언제 읽나**: 출력 문서 형식을 이해하거나 generator 에이전트를 구현할 때
+
+---
+
 ## 에이전트별 문서 (agents/)
 
 각 에이전트의 프롬프트 및 상세 로직을 포함합니다.
@@ -102,6 +113,18 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
 - 우선순위 계산
 
 **언제 읽나**: Phase 1 크롤링 로직을 구현할 때
+
+---
+
+### [record-mode-design.md](./record-mode-design.md)
+**내용**: Record 모드 상세 설계
+- State 기반 SPA 자동 캡처 (50% 케이스 대응)
+- 브라우저 오버레이 UI 설계
+- 실시간 스크린샷 캡처 워크플로우
+- 복구 기능 (중단 시 이어하기)
+- Record 모드 전용 크롤링 결과 스키마
+
+**언제 읽나**: Record 모드 UI 또는 State 기반 SPA 크롤링을 구현할 때
 
 ---
 
@@ -172,10 +195,25 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
 
 ## 아카이브
 
+### ⚠️ CRITICAL WARNING: DO NOT USE FOR IMPLEMENTATION
+
+**이 섹션의 모든 문서는 OUTDATED 레거시 문서입니다.**
+
 ### service-design.md (원본)
 **위치**: `docs/archive/service-design.md`
 **설명**: 5910줄의 통합 설계 문서 (분리 전 원본)
-**사용처**: 레퍼런스 참조용 (일반적으로 읽지 않음)
+**사용처**: 히스토리 추적용 ONLY
+
+**❌ 절대 금지:**
+- 구현 참조로 사용
+- 에이전트 프롬프트 복사
+- 코드 생성 시 참조
+
+**✅ 유일한 용도:**
+- 문서 변경 이력 확인
+- 원본 의도 파악 (design/ 문서와 불일치 시)
+
+**🚨 ALL CURRENT SPECS ARE IN `docs/design/` - USE ONLY THAT DIRECTORY**
 
 ---
 

@@ -149,7 +149,7 @@ Per `docs/design/implementation-checklist.md`:
 **Solution**:
 - Skill = ~100 lines, argument validation, calls Main Agent via Task tool
 - Main Agent = independent 30min context, Phase 1-4 control, sub-agent lifecycle
-- Rationale documented in conversation leading to final `docs/design/service-design.md` revision
+- Rationale documented in modularized design docs (see `docs/design/design-index.md`)
 
 ### Agent Dependencies
 
@@ -210,6 +210,17 @@ outputs/<project-name>/
 ---
 
 ## Implementation Guidelines
+
+### 🚨 Critical: Design Document Location
+
+**ALL implementation MUST reference `docs/design/` ONLY.**
+
+- ✅ Use: `docs/design/*.md` and `docs/design/agents/*.md`
+- ❌ NEVER use: `docs/archive/*` (outdated legacy documents)
+
+If you accidentally open an archive document, STOP immediately and go to `docs/design/design-index.md`.
+
+---
 
 ### Agent Prompts
 
@@ -280,6 +291,7 @@ From `.claude/agents/agent-architect.md`:
 3. **Do not assume SPA routing auto-detection works perfectly** - always support manual URL input
 4. **Do not use Git MCP** - removed from design, use direct source code reading instead
 5. **Do not create validation auto-retry loops** - validation FAIL continues to Phase 4 with warnings
+6. **NEVER read docs/archive/ during implementation** - archive contains OUTDATED legacy documents for reference only. ALL current design specs are in docs/design/. Reading archive will lead to implementing obsolete designs.
 
 ---
 
@@ -299,5 +311,5 @@ See `docs/design/implementation-checklist.md` for full checklist. Priority order
 
 - **Design rationale**: Git commit history and conversation context
 - **Output standards**: `docs/design/auto-draft-guideline.md` (10 sections, ID schemes)
-- **Technical specs**: `docs/design/service-design.md` (architecture, agents, error handling, schemas)
+- **Technical specs**: See `docs/design/design-index.md` for complete documentation map (architecture, workflow, error-handling, schemas, agents)
 - **Business context**: `docs/requirements/prd.md` (problem definition, success criteria)
