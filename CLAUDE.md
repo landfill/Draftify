@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 /auto-draft (Skill - thin wrapper)
   ↓ (Task tool)
 auto-draft-orchestrator (Main Agent - workflow control)
-  ↓ (Task tool)c
+  ↓ (Task tool)
 Sub-Agents (specialized workers)
   - input-analyzer
   - policy-generator
@@ -184,7 +184,7 @@ Per `docs/design/implementation-checklist.md`:
 ```
 
 ### analyzed-structure.json
-See `docs/design/service-design.md` Appendix B for complete schema including:
+See `docs/design/schemas.md` for complete schema including:
 - `project`: metadata
 - `glossary`: term definitions
 - `policies`: rules with POL-* IDs
@@ -215,8 +215,8 @@ outputs/<project-name>/
 
 When creating sub-agent prompts:
 1. Reference `docs/design/auto-draft-guideline.md` Section X for output format
-2. Reference `analyzed-structure.json` schema from `docs/design/service-design.md` Appendix B
-3. Include retry strategy from Section 7.3
+2. Reference `analyzed-structure.json` schema from `docs/design/schemas.md`
+3. Include retry strategy from `docs/design/error-handling.md` Section 7.3
 4. Specify tools: Read, Write, Grep, Glob (no Bash unless MCP interaction)
 5. Define clear success/failure criteria
 
@@ -236,11 +236,11 @@ When creating sub-agent prompts:
 
 ### Timeout Budget (30min total)
 - Phase 1 crawling: 25min max (50 pages × 30sec)
-- input-analyzer: 10min
-- policy/screen/process generators: 5min each
-- glossary-generator: 3min
-- quality-validator: 5min
-- ppt-generator: 3min
+- Phase 2 input-analyzer: 10min
+- Phase 3-1 generators (sequential): policy-generator 5min + glossary-generator 3min = 8min
+- Phase 3-2 generators (parallel): max(screen-generator 5min, process-generator 5min) = 5min
+- Phase 3.5 quality-validator: 5min
+- Phase 4 ppt-generator: 3min
 
 ---
 
@@ -285,7 +285,7 @@ From `.claude/agents/agent-architect.md`:
 
 ## Next Steps for Implementation
 
-See `docs/design/service-design.md` Appendix C for full checklist. Priority order:
+See `docs/design/implementation-checklist.md` for full checklist. Priority order:
 
 1. Verify Chrome DevTools MCP availability and capabilities
 2. Create `.claude/skills/auto-draft/skill.md` (thin wrapper)
