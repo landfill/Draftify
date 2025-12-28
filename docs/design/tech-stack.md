@@ -1,7 +1,7 @@
 # Draftify 기술 스택 선택 근거
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
 **원본 출처**: service-design.md Section 5
 
 ---
@@ -74,11 +74,11 @@
 
 ---
 
-## 웹 UI (선택)
+## 웹 UI
 
 **아키텍처**:
 - 프론트엔드: React (또는 Next.js)
-- 백엔드: Express.js
+- 백엔드: Next.js API Routes (별도 서버 불필요)
 - 통신: **HTTP Polling** (WebSocket 아님)
 
 **HTTP Polling 선택 이유**:

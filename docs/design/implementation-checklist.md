@@ -1,7 +1,7 @@
 # Draftify 구현 체크리스트
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
 **원본 출처**: service-design.md Appendix C
 
 ---
@@ -19,6 +19,16 @@
 - [ ] CLI 옵션 파싱
 - [ ] Main Agent Task tool 호출 구현
 - [ ] 에러 핸들링 (error-handling.md Section 7.1 참조)
+
+### 2.5단계: 웹 UI 구현
+- [ ] Next.js 프로젝트 생성
+- [ ] 업로드 화면 (URL, 파일 업로드, 옵션)
+- [ ] API Routes 구현
+  - [ ] POST /api/draft (Skill 호출 via child_process)
+  - [ ] GET /api/status/:id (진행 상태 조회)
+- [ ] 진행 상태 화면 (HTTP Polling, 1초 간격)
+- [ ] 결과 화면 (다운로드, 미리보기)
+- [ ] 세션 관리 (파일 시스템 기반)
 
 ### 3단계: auto-draft-orchestrator (Main Agent) 구현
 - [ ] agent.md 프롬프트 작성
