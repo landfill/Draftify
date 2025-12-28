@@ -66,31 +66,72 @@ Sub-Agents (specialized workers)
 
 ## Key Design Documents
 
-### Must Read First
+### Documentation Structure
 
-1. **docs/design/service-design.md** - Complete system architecture
-   - Section 2: System Architecture (Skill + Agent layers)
-   - Section 3: Agent Structure (hierarchy and responsibilities)
-   - Section 7: Error Handling & Workflow Control (orchestration logic)
-   - Appendix C: Implementation Checklist
+**Design documents are now modularized** for better context efficiency. Start with the navigation guide:
 
-2. **docs/design/auto-draft-guideline.md** - Output specification
+**📍 [docs/design/design-index.md](./docs/design/design-index.md)** - Complete navigation map for all design docs
+
+### Must Read First (Core Documents)
+
+1. **[docs/design/architecture.md](./docs/design/architecture.md)** - System architecture
+   - 4-layer architecture (User → Skill → Orchestration → Execution → Data)
+   - Skill + Main Agent + Sub-Agents pattern
+   - Component relationships and data flow
+
+2. **[docs/design/workflow.md](./docs/design/workflow.md)** - Phase 1-4 workflow
+   - Data flow through all phases
+   - Sequential vs parallel execution points
+   - Dependency graph
+
+3. **[docs/design/error-handling.md](./docs/design/error-handling.md)** - Error strategy
+   - Skill layer error handling
+   - Main Agent orchestration logic
+   - Retry strategies and timeout settings
+   - Minimum success criteria
+
+4. **[docs/design/auto-draft-guideline.md](./docs/design/auto-draft-guideline.md)** - Output specification
    - 10 standard sections for generated documents
-   - Required fields, writing standards, ID schemes (POL-001, SCR-001)
+   - Required fields, writing standards, ID schemes (POL-*, SCR-*)
    - All agents reference this for output formatting
 
-3. **docs/requirements/prd.md** - Product requirements
+5. **[docs/requirements/prd.md](./docs/requirements/prd.md)** - Product requirements
    - Input types, output formats, success criteria
    - Non-functional requirements (30min timeout, partial success handling)
 
+### Implementation Guides
+
+- **[docs/design/crawling-strategy.md](./docs/design/crawling-strategy.md)** - Phase 1 crawling (Tier 1-3, Record mode)
+- **[docs/design/schemas.md](./docs/design/schemas.md)** - JSON data schemas (crawling-result, analyzed-structure)
+- **[docs/design/implementation-checklist.md](./docs/design/implementation-checklist.md)** - Step-by-step implementation roadmap
+- **[docs/design/edge-cases.md](./docs/design/edge-cases.md)** - Edge case handling (14 scenarios)
+
+### Agent Prompts
+
+All agent prompts are in **[docs/design/agents/](./docs/design/agents/)**:
+- **orchestrator.md** - Main Agent (Phase 1-4 control)
+- **input-analyzer.md** - Phase 2 analysis
+- **policy-generator.md**, **glossary-generator.md** - Phase 3-1
+- **screen-generator.md**, **process-generator.md** - Phase 3-2
+- **quality-validator.md** - Phase 3.5
+
+### Reference Documents
+
+- **[docs/design/project-management.md](./docs/design/project-management.md)** - Output directory structure, project naming
+- **[docs/design/tech-stack.md](./docs/design/tech-stack.md)** - Technology choices and rationale
+
+### Legacy Archive
+
+- **docs/archive/service-design.md** - Original monolithic design doc (for reference only)
+
 ### Implementation Priority
 
-Per `docs/design/service-design.md` Appendix C:
+Per `docs/design/implementation-checklist.md`:
 1. Chrome DevTools MCP setup
 2. `/auto-draft` Skill (thin wrapper)
 3. `auto-draft-orchestrator` Main Agent prompt
 4. Sub-agent prompts (input-analyzer first, then generators)
-5. Phase 1 crawling implementation
+5. Phase 1 crawling implementation (Tier 1 → 2B → Record mode)
 6. `/ppt-generator` skill (separate)
 
 ---
