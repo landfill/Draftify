@@ -1,8 +1,9 @@
 # Draftify 엣지 케이스 및 대응 방안
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Appendix E
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
+
+> **Note**: 이 문서는 엣지 케이스 대응의 완전한 명세입니다.
 
 ---
 
@@ -79,9 +80,5 @@
 - [ ] quality-validator가 broken reference 감지
 
 **Record 모드 관련**:
-- [ ] 중도 종료 후 복구 파일로 재시작 확인
-- [ ] --output 없이 실행 시 복구 불가 경고
-
----
-
-**상세 시나리오**: service-design.md Appendix E (lines 5509-5876) 참조
+- [ ] 중도 종료 후 동일 URL 재실행 시 복구 확인
+- [ ] 복구 파일 경로 확인: `~/.draftify/record-sessions/{url-hash}.recovery.json`

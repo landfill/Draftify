@@ -1,8 +1,9 @@
 # Draftify 데이터 흐름 (Workflow)
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Section 4
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
+
+> **Note**: 이 문서는 Phase 1-4 워크플로우의 완전한 명세입니다.
 
 ---
 
@@ -61,15 +62,16 @@
   │
   ▼
 ┌─────────────────────────────────────┐
-│ Phase 3-2: 후행 섹션 생성 (병렬)     │
+│ Phase 3-2: 후행 섹션 생성 (순차)     │
 │                                     │
 │ ┌─────────────────┐                │
 │ │screen-generator │ → screen.md    │
 │ │(정책 ID 참조)    │                │
-│ └─────────────────┘                │
+│ └────────┬────────┘                │
+│          ↓                          │
 │ ┌─────────────────┐                │
 │ │process-generator│ → process.md   │
-│ │(정책 ID 참조)    │                │
+│ │(화면 ID 참조)    │                │
 │ └─────────────────┘                │
 └─────────────────────────────────────┘
   │
@@ -109,7 +111,7 @@
 | **1. 입력 수집** | URL, 문서 파일들, 스크린샷, 소스코드(선택) | MCP 크롤링, 파일 읽기 | crawling-result.json, 문서 텍스트 |
 | **2. 분석** | crawling-result.json, 문서 텍스트, 소스코드 | input-analyzer 에이전트 | analyzed-structure.json |
 | **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 순차 실행 | policy.md, glossary.md |
-| **3-2. 후행 생성** | analyzed-structure.json, policy.md | 2개 에이전트 병렬 실행 | screen.md, process.md |
+| **3-2. 후행 생성** | analyzed-structure.json, policy.md, screen.md | 2개 에이전트 순차 실행 (screen → process) | screen.md, process.md |
 | **3.5. 검증** | 모든 섹션.md, guideline | validator 에이전트 | validation-report.md (PASS/FAIL) |
 | **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (ppt-generator) | final-draft.pptx 또는 HTML |
 
@@ -137,26 +139,26 @@ URL ────┐
                                     policy.md, glossary.md                      │
                                             │                                   │
                             ┌───────────────┴───────────────────────────────────┘
-                            │                               │
-                            ▼                               ▼
-                    [screen-generator]              [process-generator]
-                    (정책 ID 참조)                   (정책 ID 참조)
-                            │                               │
-                            │                               │
-                            └───────────────┬───────────────┘
-                                                            │
-                                                            │ 모든 섹션.md
-                                                            │
-                                                            ▼
-                                                    [quality-validator]
-                                                            │
-                                                            │ 검증 통과
-                                                            │
-                                                            ▼
-                                                    [ppt-generator]
-                                                            │
-                                                            ▼
-                                                    final-draft.pptx
+                            │
+                            ▼
+                    [screen-generator]
+                    (정책 ID 참조)
+                            │
+                            │ screen.md
+                            ▼
+                    [process-generator]
+                    (정책 ID + 화면 ID 참조)
+                            │
+                            │ 모든 섹션.md
+                            ▼
+                    [quality-validator]
+                            │
+                            │ 검증 통과
+                            ▼
+                    [ppt-generator]
+                            │
+                            ▼
+                    final-draft.pptx
 ```
 
 ---
@@ -185,10 +187,10 @@ URL ────┐
 
 ### Phase 3-2: 후행 섹션 생성
 - **목표**: 화면 및 프로세스 섹션 생성
-- **에이전트**: screen-generator, process-generator (병렬)
+- **에이전트**: screen-generator → process-generator (순차)
 - **출력**: `screen.md`, `process.md`
 - **실패 시**: 부분 성공 (성공한 섹션만 포함)
-- **병렬화 가능**: 두 에이전트는 서로 독립적
+- **왜 순차?**: process-generator가 screen.md의 화면 ID를 참조하기 때문
 
 ### Phase 3.5: 품질 검증
 - **목표**: 생성된 섹션들의 ID 참조 무결성 검증
@@ -204,14 +206,20 @@ URL ────┐
 
 ---
 
-## 병렬 실행 포인트
+## 실행 순서 요약
 
-**Phase 3-2만 병렬 가능**:
-- screen-generator ⚡ process-generator (동시 실행)
-- 실행 시간: ~5분 → ~2.5분 (2배 속도 향상)
+**전체 워크플로우 순차 실행**:
+```
+Phase 1 → Phase 2 → Phase 3-1 → Phase 3-2 → Phase 3.5 → Phase 4
+                        ↓           ↓
+                    policy.md   screen.md
+                    glossary.md     ↓
+                                process.md
+```
 
-**나머지는 순차 실행 필수**:
-- Phase 1 → 2 → 3-1 → 3-2 → 3.5 → 4
+**Phase 3-2 내부 순서**:
+1. screen-generator → screen.md 생성
+2. process-generator → screen.md 참조하여 process.md 생성
 
 ---
 

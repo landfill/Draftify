@@ -428,14 +428,30 @@ page = await chrome_open(url)
 
 **에러 처리**:
 ```python
+import hashlib
+import os
+
+def get_recovery_path(url):
+    """
+    URL 해시 기반 고정 복구 파일 경로 생성
+    프로젝트명과 무관하게 동일 URL은 동일 경로
+    """
+    url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+    recovery_dir = os.path.expanduser("~/.draftify/record-sessions")
+    os.makedirs(recovery_dir, exist_ok=True)
+    return f"{recovery_dir}/{url_hash}.recovery.json"
+
 async def record_mode_with_recovery(url, source_dir, output_dir):
     """
     브라우저 크래시 복구 로직 포함
+
+    복구 파일은 ~/.draftify/record-sessions/{url-hash}.recovery.json에 저장
+    → --output 옵션 없이도 동일 URL 재실행 시 복구 가능
     """
 
-    # 1. 이전 세션 확인
-    recovery_file = f"{output_dir}/.record-recovery.json"
-    previous_session = load_recovery_file(recovery_file) if os.exists(recovery_file) else None
+    # 1. 이전 세션 확인 (URL 해시 기반 고정 경로)
+    recovery_file = get_recovery_path(url)
+    previous_session = load_recovery_file(recovery_file) if os.path.exists(recovery_file) else None
 
     if previous_session:
         print("\n⚠️ 이전 Record 세션 발견!")
@@ -867,7 +883,7 @@ async def phase1_intelligent_crawling(url, options):
 
 ## 다음 단계
 
-1. ✅ service-design.md에 Record 모드 섹션 추가
-2. ✅ 부록 C 체크리스트 업데이트
+1. ✅ Record 모드 상세 설계 완료 (이 문서)
+2. ✅ implementation-checklist.md 업데이트
 3. ✅ PRD 입력 옵션 업데이트 (`--record` 추가)
 4. Phase 1 MVP 구현 시작

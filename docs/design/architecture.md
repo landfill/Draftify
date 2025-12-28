@@ -1,8 +1,9 @@
 # Draftify 시스템 아키텍처
 
-**버전**: 1.1
+**버전**: 1.2
 **최종 갱신**: 2025-12-28
-**원본 출처**: service-design.md Section 2
+
+> **Note**: 이 문서는 시스템 아키텍처의 완전한 명세입니다.
 
 ---
 
@@ -164,29 +165,31 @@ await chromeDevTools.take_screenshot()
 
 #### 2. Main Agent → 서브 에이전트
 
-**Task tool로 순차/병렬 실행**:
+**Task tool로 순차 실행**:
 
 | Phase | 에이전트 | 실행 방식 | 의존성 |
 |-------|---------|---------|--------|
 | **Phase 2** | input-analyzer | 순차 (단일) | Phase 1 완료 필수 |
 | **Phase 3-1** | policy-generator, glossary-generator | 순차 (2개) | Phase 2 완료 필수 |
-| **Phase 3-2** | screen-generator, process-generator | **병렬** (2개) | Phase 3-1 완료 필수 |
+| **Phase 3-2** | screen-generator → process-generator | **순차** (2개) | Phase 3-1 완료 필수, screen → process 순서 |
 | **Phase 3.5** | quality-validator | 순차 (단일) | Phase 3-2 완료 필수 |
 
-**병렬 실행 예시** (Phase 3-2):
+**순차 실행 예시** (Phase 3-2):
 ```typescript
-// 단일 메시지에서 2개 Task tool 호출
-const [screenResult, processResult] = await Promise.all([
-  Task({
-    subagent_type: "general-purpose",
-    prompt: "Generate screen definitions...",
-  }),
-  Task({
-    subagent_type: "general-purpose",
-    prompt: "Generate process flows...",
-  })
-])
+// Phase 3-2a: screen-generator 먼저 실행
+const screenResult = await Task({
+  subagent_type: "general-purpose",
+  prompt: "Generate screen definitions...",
+});
+
+// Phase 3-2b: process-generator (screen-definition.md 필요)
+const processResult = await Task({
+  subagent_type: "general-purpose",
+  prompt: "Generate process flows...",
+});
 ```
+
+> **Note**: process-generator는 screen-definition.md를 참조하므로 screen-generator 완료 후 실행
 
 ---
 
@@ -254,10 +257,11 @@ const [screenResult, processResult] = await Promise.all([
 ### 왜 서브 에이전트 독립 실행?
 
 **장점**:
-1. **병렬화**: Phase 3-2 에이전트 동시 실행 (2배 속도)
+1. **컨텍스트 분리**: 각 에이전트 독립 컨텍스트로 토큰 효율화
 2. **재시도**: 개별 에이전트만 재실행 (전체 재시작 불필요)
 3. **투명성**: 각 에이전트 로그 독립 추적
 4. **확장성**: 새 에이전트 추가 용이
+5. **참조 무결성**: 순차 실행으로 의존성 충족 보장
 
 ---
 

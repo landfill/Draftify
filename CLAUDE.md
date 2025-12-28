@@ -52,9 +52,9 @@ Sub-Agents (specialized workers)
    - policy-generator → `policy-definition.md`
    - glossary-generator → `glossary.md`
 
-4. **Phase 3-2**: Dependent section generation (parallel)
+4. **Phase 3-2**: Dependent section generation (sequential: screen → process)
    - screen-generator → `screen-definition.md`
-   - process-generator → `process-flow.md`
+   - process-generator → `process-flow.md` (screen-definition.md 참조)
 
 5. **Phase 3.5**: Quality validation
    - quality-validator checks against `docs/design/auto-draft-guideline.md`
@@ -153,10 +153,11 @@ Per `docs/design/implementation-checklist.md`:
 
 ### Agent Dependencies
 
-**Phase 3 Split Required**:
+**Phase 3 Sequential Execution Required**:
 - Phase 3-1 generates policy IDs (POL-001...)
-- Phase 3-2 references those IDs in screen/process definitions
-- Cannot parallelize across 3-1 and 3-2
+- Phase 3-2 (screen) generates screen IDs (SCR-001...)
+- Phase 3-2 (process) references both policy IDs and screen IDs
+- 전체 순차 실행: 3-1 → screen → process
 
 ### Error Handling Philosophy
 
@@ -246,12 +247,14 @@ When creating sub-agent prompts:
 **Critical**: URL normalization (`/home` = `/home/` = `/home?`), BFS traversal, priority scoring when 50-page limit hit.
 
 ### Timeout Budget (30min total)
-- Phase 1 crawling: 25min max (50 pages × 30sec)
-- Phase 2 input-analyzer: 10min
-- Phase 3-1 generators (sequential): policy-generator 5min + glossary-generator 3min = 8min
-- Phase 3-2 generators (parallel): max(screen-generator 5min, process-generator 5min) = 5min
-- Phase 3.5 quality-validator: 5min
-- Phase 4 ppt-generator: 3min
+- Phase 1 crawling: 15min max (50 pages, 조기 종료 가능)
+- Phase 2 input-analyzer: 5min
+- Phase 3-1 generators (sequential): policy 3min + glossary 2min = 5min
+- Phase 3-2 generators (sequential): screen 5min + process 5min = 10min
+- Phase 3.5 quality-validator: 3min
+- Phase 4 ppt-generator: 2min
+
+> **Note**: 30분 예산 초과 시 Phase 1에서 조기 종료 (최소 10페이지 확보)
 
 ---
 
@@ -276,11 +279,12 @@ When creating sub-agent prompts:
 From `.claude/agents/agent-architect.md`:
 
 **Orchestrator-Worker**: Main Agent orchestrates, sub-agents are workers
-**Prompt Chain**: Phase 1 → 2 → 3-1 → 3-2 → 3.5 → 4 (sequential data transformation)
-**Parallelization**: Phase 3-2 (screen + process generators run concurrently)
+**Prompt Chain**: Phase 1 → 2 → 3-1 → 3-2(screen) → 3-2(process) → 3.5 → 4 (sequential)
 **Evaluator Pattern**: quality-validator assesses output, but no auto-optimization loop (manual user iteration)
 
-**Not Applied**: Routing (all inputs follow same Phase 1-4 path)
+**Not Applied**:
+- Routing (all inputs follow same Phase 1-4 path)
+- Parallelization (Phase 3-2는 순차 실행으로 변경됨)
 
 ---
 
@@ -288,10 +292,11 @@ From `.claude/agents/agent-architect.md`:
 
 1. **Do not implement /auto-draft as Skill-only** - will exceed context limits
 2. **Do not parallelize Phase 3-1 and 3-2** - breaks policy ID dependencies
-3. **Do not assume SPA routing auto-detection works perfectly** - always support manual URL input
-4. **Do not use Git MCP** - removed from design, use direct source code reading instead
-5. **Do not create validation auto-retry loops** - validation FAIL continues to Phase 4 with warnings
-6. **NEVER read docs/archive/ during implementation** - archive contains OUTDATED legacy documents for reference only. ALL current design specs are in docs/design/. Reading archive will lead to implementing obsolete designs.
+3. **Do not parallelize Phase 3-2 (screen/process)** - process-generator requires screen-definition.md
+4. **Do not assume SPA routing auto-detection works perfectly** - always support manual URL input
+5. **Do not use Git MCP** - removed from design, use direct source code reading instead
+6. **Do not create validation auto-retry loops** - validation FAIL continues to Phase 4 with warnings
+7. **NEVER read docs/archive/ during implementation** - archive contains OUTDATED legacy documents for reference only. ALL current design specs are in docs/design/. Reading archive will lead to implementing obsolete designs.
 
 ---
 

@@ -1,9 +1,9 @@
 # Draftify Phase 1: 크롤링 전략
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Appendix A
-**상세 알고리즘**: service-design.md Appendix A (lines 3454-4872) 참조
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
+
+> **Note**: 이 문서는 Phase 1 크롤링의 완전한 명세입니다. 별도 참조 문서 없이 구현 가능합니다.
 
 ---
 
@@ -173,23 +173,28 @@ State: 'home', 'quiz', 'result'  // React useState
   --record              Record 모드 활성화
   --source-dir <dir>    소스코드 (선택, 화면 목록 추론용)
   --expected-screens N  예상 화면 개수
-  --output <name>       프로젝트명 명시 (권장, 복구 기능에 필요)
+  --output <name>       프로젝트명 명시 (선택)
 ```
 
-### 프로젝트명 결정 (중요!)
-
-**복구 기능**을 위해 안정적인 프로젝트명이 필수:
-
-```bash
-/auto-draft --url https://example.com --record --output my-project
-```
+### 프로젝트명 결정
 
 **프로젝트명 우선순위**:
-1. `--output` 옵션 ← **Record 모드에서 권장**
+1. `--output` 옵션 (명시적 지정)
 2. PRD `project.name` 필드
 3. README.md 첫 번째 제목
 4. URL `<title>` 태그
-5. 기본값: `mvp-<timestamp>` ← **복구 불가능** (매번 다른 경로)
+5. 기본값: `mvp-<timestamp>`
+
+### 복구 기능
+
+**복구 파일은 URL 해시 기반 고정 경로에 저장**:
+```
+~/.draftify/record-sessions/{url-hash}.recovery.json
+```
+
+- `--output` 옵션 없이도 동일 URL 재실행 시 자동 복구 가능
+- 브라우저 크래시/중단 시 이전 캡처 내용 자동 저장
+- 상세 설계: [record-mode-design.md](./record-mode-design.md) 참조
 
 ### 워크플로우
 
@@ -342,4 +347,3 @@ Record 모드로 재시작하시겠습니까? (y/n)
 - **Record 모드 상세**: [record-mode-design.md](./record-mode-design.md)
 - **데이터 스키마**: [schemas.md](./schemas.md) (crawling-result.json)
 - **에러 핸들링**: [error-handling.md](./error-handling.md) (Phase 1 섹션)
-- **완전한 알고리즘**: service-design.md Appendix A (BFS, Tier 2A/2B/2C 상세 코드 포함)

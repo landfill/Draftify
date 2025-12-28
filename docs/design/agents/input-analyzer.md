@@ -1,8 +1,7 @@
 # input-analyzer Agent
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Section 3.6
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
 
 ---
 
@@ -227,26 +226,52 @@ If optional files are not provided, proceed with crawling-result.json only.
 
 ```json
 {
-  "urls": [
+  "metadata": {
+    "mode": "auto",
+    "timestamp": "2025-12-27T10:30:00Z",
+    "crawling_strategy": "tier1",
+    "total_pages": 2,
+    "base_url": "http://localhost:3000"
+  },
+  "pages": [
     {
       "url": "http://localhost:3000/",
-      "title": "Home - Todo App",
+      "screen_name": null,
+      "screenshot": "screenshots/screen-001.png",
       "dom": {
-        "buttons": [{ "text": "로그인", "onClick": "navigate('/login')" }],
-        "forms": [],
-        "links": [{ "href": "/about", "text": "About" }]
+        "title": "Home - Todo App",
+        "h1": "Todo App",
+        "buttons": ["로그인"],
+        "inputs": [],
+        "links": [{ "text": "About", "href": "/about" }],
+        "elementCount": 45
       },
-      "screenshot": "screenshots/screen-001.png"
+      "depth": 0,
+      "discoveredBy": "tier1",
+      "timestamp": "2025-12-27T10:30:05Z"
     },
     {
       "url": "http://localhost:3000/login",
-      "title": "Login",
+      "screen_name": null,
+      "screenshot": "screenshots/screen-002.png",
       "dom": {
-        "forms": [{ "id": "login-form", "action": "/api/auth/login", "method": "POST" }]
+        "title": "Login",
+        "h1": "로그인",
+        "buttons": ["로그인"],
+        "inputs": [
+          { "type": "email", "placeholder": "이메일", "name": "email" },
+          { "type": "password", "placeholder": "비밀번호", "name": "password" }
+        ],
+        "links": [],
+        "elementCount": 32
       },
-      "screenshot": "screenshots/screen-002.png"
+      "depth": 1,
+      "discoveredBy": "tier1",
+      "timestamp": "2025-12-27T10:30:15Z"
     }
-  ]
+  ],
+  "links": [],
+  "errors": []
 }
 ```
 

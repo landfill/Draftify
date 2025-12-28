@@ -1,8 +1,9 @@
 # Draftify 에러 핸들링 및 워크플로우 제어
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Section 7
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
+
+> **Note**: 이 문서는 에러 핸들링의 완전한 명세입니다.
 
 ---
 
@@ -54,7 +55,7 @@ export async function autoDraft(url: string, options: Options) {
     prompt: `
 You are the auto-draft-orchestrator agent.
 
-Execute the complete auto-draft workflow as defined in service-design.md Section 7.2.
+Read your full prompt from docs/design/agents/orchestrator.md and execute the workflow.
 
 **Input Configuration**:
 ${JSON.stringify(config, null, 2)}
@@ -62,7 +63,7 @@ ${JSON.stringify(config, null, 2)}
 **Your responsibilities**:
 1. Execute Phase 1-4 sequentially
 2. Call sub-agents as needed
-3. Handle errors according to Section 7.2
+3. Handle errors according to docs/design/error-handling.md
 4. Apply minimum success criteria
 5. Save all intermediate results to outputs/<project>/
 
@@ -109,7 +110,7 @@ async function orchestrate(config) {
   // Phase 3-1: 선행 섹션 생성 (순차)
   const phase31Results = await runPhase31(phase2Result.data);
 
-  // Phase 3-2: 후행 섹션 생성 (병렬)
+  // Phase 3-2: 후행 섹션 생성 (순차: screen → process)
   const phase32Results = await runPhase32(
     phase2Result.data,
     phase31Results
@@ -159,23 +160,24 @@ const glossaryResult = await Task({
 });
 ```
 
-**병렬 실행 (Phase 3-2)**:
+**순차 실행 (Phase 3-2: screen → process)**:
 ```typescript
-// 단일 메시지에서 여러 Task 호출 (병렬)
-// screen-generator와 process-generator 동시 실행
-const [screenResult, processResult] = await Promise.all([
-  Task({
-    subagent_type: "general-purpose",
-    prompt: "Generate screen definitions...",
-    timeout: 300000,
-  }),
-  Task({
-    subagent_type: "general-purpose",
-    prompt: "Generate process flows...",
-    timeout: 300000,
-  }),
-]);
+// screen-generator 먼저 실행
+const screenResult = await Task({
+  subagent_type: "general-purpose",
+  prompt: "Generate screen definitions...",
+  timeout: 300000, // 5분
+});
+
+// process-generator는 screen-definition.md 참조
+const processResult = await Task({
+  subagent_type: "general-purpose",
+  prompt: "Generate process flows...",
+  timeout: 300000, // 5분
+});
 ```
+
+> **Note**: process-generator는 screen-definition.md를 참조하므로 screen-generator 완료 후 실행
 
 ---
 
@@ -288,14 +290,18 @@ const [screenResult, processResult] = await Promise.all([
   - 진행에 큰 영향 없음
 ```
 
-### Phase 3-2: 후행 섹션 생성
+### Phase 3-2: 후행 섹션 생성 (순차: screen → process)
 
 **에러 처리**:
 ```markdown
-- **병렬 실행 중 일부 실패**:
-  - 각 에이전트 독립적으로 재시도
-  - 예: screen-generator 성공, process-generator 실패
-  - 성공한 섹션만 포함하여 진행
+- **screen-generator 실패**:
+  - 3회 재시도
+  - 실패 시: 빈 화면 섹션 생성, process-generator 계속 진행
+  - process-generator는 analyzed-structure.json의 screens 배열 참조 (fallback 없음)
+
+- **process-generator 실패**:
+  - 2회 재시도
+  - 실패 시: 빈 프로세스 섹션 생성
 
 - **모두 실패**:
   - Phase 3-1 결과만으로 진행

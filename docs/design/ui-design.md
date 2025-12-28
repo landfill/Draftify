@@ -405,13 +405,15 @@ const { data: status } = useQuery({
 ### Phase 3-2: 화면/프로세스 생성
 
 **UI 표시**:
-- 진행률: `화면/프로세스 생성 중... (병렬)`
+- 진행률: `화면 정의 생성 중...` → `프로세스 흐름 생성 중...`
 - 로그:
   - `[13:17:40] screen-generator 시작`
-  - `[13:17:42] process-generator 시작`
+  - `[13:19:30] screen-generator 완료`
+  - `[13:19:31] process-generator 시작`
+  - `[13:21:20] process-generator 완료`
 
 **백엔드 동작**:
-- screen-generator, process-generator (병렬)
+- screen-generator → process-generator (순차)
 
 ---
 

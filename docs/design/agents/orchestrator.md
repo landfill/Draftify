@@ -1,8 +1,7 @@
 # auto-draft-orchestrator (Main Agent)
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-27
-**원본 출처**: service-design.md Section 3.4, Section 7.2
+**버전**: 1.1
+**최종 갱신**: 2025-12-28
 
 ---
 
@@ -30,7 +29,7 @@ You are invoked by the /auto-draft Skill via Task tool and run in an independent
 - **Phase 1**: Input collection (Chrome DevTools MCP + file reading)
 - **Phase 2**: Analysis (input-analyzer sub-agent)
 - **Phase 3-1**: Prerequisite section generation (policy-generator, glossary-generator sequentially)
-- **Phase 3-2**: Dependent section generation (screen-generator, process-generator **in parallel**)
+- **Phase 3-2**: Dependent section generation (screen-generator → process-generator **sequentially**)
 - **Phase 3.5**: Quality validation (quality-validator)
 - **Phase 4**: Document generation (/ppt-generator skill)
 
@@ -77,7 +76,7 @@ async function orchestrate(config) {
   // Phase 3-1: Prerequisite sections (SEQUENTIAL)
   const phase31Results = await runPhase31(phase2Result.data);
 
-  // Phase 3-2: Dependent sections (PARALLEL)
+  // Phase 3-2: Dependent sections (SEQUENTIAL: screen → process)
   const phase32Results = await runPhase32(
     phase2Result.data,
     phase31Results
@@ -208,22 +207,23 @@ Follow all instructions in the agent prompt file.
 
 ---
 
-### Phase 3-2: Dependent Section Generation (PARALLEL)
+### Phase 3-2: Dependent Section Generation (SEQUENTIAL)
 
-**Sub-Agents**: screen-generator, process-generator
+**Sub-Agents**: screen-generator → process-generator
 
-**Execution**: **PARALLEL** (single message with multiple Task calls)
+**Execution**: **SEQUENTIAL** (screen-generator 완료 후 process-generator 실행)
 
-**CRITICAL**: These agents MUST wait for Phase 3-1 to complete (they reference policy IDs)
+**CRITICAL**:
+- 두 에이전트 모두 Phase 3-1 완료 필수 (정책 ID 참조)
+- process-generator는 screen-definition.md 필요 → screen-generator 선행 필수
 
 **Invocation**:
 ```typescript
-// Run in parallel using a single message
-const [screenResult, processResult] = await Promise.all([
-  Task({
-    subagent_type: "general-purpose",
-    description: "Generate screen definitions",
-    prompt: `You are the screen-generator agent.
+// Phase 3-2a: Screen definitions (먼저 실행)
+const screenResult = await Task({
+  subagent_type: "general-purpose",
+  description: "Generate screen definitions",
+  prompt: `You are the screen-generator agent.
 
 Read the screen-generator agent prompt from docs/design/agents/screen-generator.md.
 
@@ -235,13 +235,15 @@ Read the screen-generator agent prompt from docs/design/agents/screen-generator.
 **Output**: outputs/{projectName}/sections/08-screen-definition.md
 
 Follow all instructions in the agent prompt file.
-    `,
-    timeout: 300000, // 5 minutes
-  }),
-  Task({
-    subagent_type: "general-purpose",
-    description: "Generate process flows",
-    prompt: `You are the process-generator agent.
+  `,
+  timeout: 300000, // 5 minutes
+});
+
+// Phase 3-2b: Process flows (screen-definition.md 생성 후 실행)
+const processResult = await Task({
+  subagent_type: "general-purpose",
+  description: "Generate process flows",
+  prompt: `You are the process-generator agent.
 
 Read the process-generator agent prompt from docs/design/agents/process-generator.md.
 
@@ -253,10 +255,9 @@ Read the process-generator agent prompt from docs/design/agents/process-generato
 **Output**: outputs/{projectName}/sections/07-process-flow.md
 
 Follow all instructions in the agent prompt file.
-    `,
-    timeout: 300000, // 5 minutes
-  }),
-]);
+  `,
+  timeout: 300000, // 5 minutes
+});
 ```
 
 **Error Handling**: See error-handling.md Section 7.4 Phase 3-2
@@ -409,12 +410,15 @@ outputs/{projectName}/
 **Total Workflow**: 30 minutes (1,800,000ms)
 
 **Phase Budget**:
-- Phase 1: 25 minutes (crawling 50 pages)
-- Phase 2: 10 minutes (input-analyzer)
-- Phase 3-1: 8 minutes (policy + glossary)
-- Phase 3-2: 10 minutes (screen + process in parallel)
-- Phase 3.5: 5 minutes (quality-validator)
-- Phase 4: 3 minutes (ppt-generator)
+- Phase 1: 15 minutes (crawling 50 pages)
+- Phase 2: 5 minutes (input-analyzer)
+- Phase 3-1: 5 minutes (policy + glossary sequential)
+- Phase 3-2: 10 minutes (screen 5min + process 5min sequential)
+- Phase 3.5: 3 minutes (quality-validator)
+- Phase 4: 2 minutes (ppt-generator)
+- **Total**: 40 minutes → **30분 예산 초과 시 Phase 1 조기 종료**
+
+> **Note**: 30분 예산 내 완료를 위해 Phase 1에서 조기 종료 가능 (최소 10페이지 확보 시)
 
 If timeout is exceeded at any phase, apply retry/fallback strategies per error-handling.md.
 
@@ -442,8 +446,9 @@ If timeout is exceeded at any phase, apply retry/fallback strategies per error-h
 [Phase 3-1] Calling glossary-generator...
 [glossary-generator] Generated 05-glossary.md (12 terms) ✓
 
-[Phase 3-2] Calling screen-generator + process-generator (parallel)...
+[Phase 3-2a] Calling screen-generator...
 [screen-generator] Generated 08-screen-definition.md (8 screens) ✓
+[Phase 3-2b] Calling process-generator...
 [process-generator] Generated 07-process-flow.md (3 flows) ✓
 
 [Phase 3.5] Calling quality-validator...

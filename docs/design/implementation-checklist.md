@@ -1,8 +1,9 @@
 # Draftify 구현 체크리스트
 
-**버전**: 1.1
+**버전**: 1.2
 **최종 갱신**: 2025-12-28
-**원본 출처**: service-design.md Appendix C
+
+> **Note**: 이 문서는 구현 체크리스트의 완전한 명세입니다.
 
 ---
 
@@ -113,8 +114,9 @@
 
 ### Phase 3 검증
 - [ ] Phase 3-1 → 3-2 순차 실행
-- [ ] Phase 3-2 병렬 실행 (screen + process)
+- [ ] Phase 3-2 순차 실행 (screen → process)
 - [ ] 정책 ID 참조 무결성
+- [ ] 화면 ID 참조 무결성 (process → screen)
 - [ ] 빈 섹션 생성 (실패 시)
 
 ### Phase 3.5 검증
@@ -146,7 +148,3 @@
 - [ ] 50페이지 초과
 - [ ] input-analyzer 실패
 - [ ] validation FAIL
-
----
-
-**상세 구현 가이드**: service-design.md Appendix C (lines 5239-5508) 참조

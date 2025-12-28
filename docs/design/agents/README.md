@@ -49,7 +49,7 @@ Each agent prompt file follows the standard structure:
 
 ## References
 
-- **Complete Agent Prompts**: See docs/archive/service-design.md Section 3
 - **Workflow**: [workflow.md](../workflow.md)
 - **Error Handling**: [error-handling.md](../error-handling.md)
 - **Data Schemas**: [schemas.md](../schemas.md)
+- **Output Standards**: [auto-draft-guideline.md](../auto-draft-guideline.md)
