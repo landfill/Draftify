@@ -1,7 +1,7 @@
 # policy-generator Agent
 
-**버전**: 1.1
-**최종 갱신**: 2025-12-28
+**버전**: 1.3
+**최종 갱신**: 2025-12-29
 
 ---
 
@@ -41,7 +41,8 @@ All input files are located in: `outputs/{projectName}/`
 
 ### ID Naming Convention
 - **Format**: `POL-{CATEGORY}-{SEQ}`
-- **Allowed Categories** (auto-draft-guideline.md Section 11.1):
+- **Pattern**: `POL-[A-Z]{2,5}-\d{3}` (2-5자 영문 대문자)
+- **기본 Categories** (auto-draft-guideline.md Section 11.1):
   - AUTH: 인증/권한
   - VAL: 입력 검증
   - DATA: 데이터 처리
@@ -49,6 +50,13 @@ All input files are located in: `outputs/{projectName}/`
   - SEC: 보안
   - BIZ: 비즈니스 로직
   - UI: UI/UX 정책
+- **확장 Categories** (프로젝트 요구사항에 따라 허용):
+  - NOTIF: 알림 정책
+  - PAY: 결제 정책
+  - SHIP: 배송 정책
+  - RPT: 리포팅 정책
+  - INTEG: 외부 연동 정책
+  - 기타 2-5자 영문 대문자 카테고리
 
 ## 4. Processing Logic (처리 로직)
 
@@ -59,7 +67,8 @@ All input files are located in: `outputs/{projectName}/`
    - Extract: id, category, rule, description, applies_to
 
 2. **Categorize policies**
-   - Group by category (AUTH, VAL, DATA, ERR, SEC, BIZ, UI)
+   - Group by category (기본 7개 + 확장 카테고리 허용)
+   - 카테고리 코드는 2-5자 영문 대문자 허용
    - Sort by ID within each category
 
 3. **Generate policy IDs if missing**
@@ -122,7 +131,7 @@ All input files are located in: `outputs/{projectName}/`
 ### Failure Conditions
 - Cannot parse analyzed-structure.json (invalid JSON)
 - File write permission error
-- Invalid category code used (not in allowed list)
+- Invalid category format (must be 2-5 uppercase letters)
 
 ### Validation Checklist
 - [ ] Each policy has unique ID
@@ -152,9 +161,10 @@ All input files are located in: `outputs/{projectName}/`
   - Log warning: "No policies extracted from input"
   - Continue (PARTIAL SUCCESS)
 
-- **If some policies have invalid categories**:
-  - Reassign to BIZ category
-  - Log warning: "Policy {id} has invalid category, reassigned to BIZ"
+- **If some policies have invalid category format**:
+  - 카테고리가 2-5자 영문 대문자가 아닌 경우만 BIZ로 재분류
+  - Log warning: "Policy {id} has invalid category format, reassigned to BIZ"
+  - 확장 카테고리(NOTIF, PAY 등)는 그대로 허용
   - Continue
 
 ### Failure Modes
@@ -259,7 +269,7 @@ All input files are located in: `outputs/{projectName}/`
 - UI/UX (UI)
 ```
 
-### Example 3: Error Recovery - Invalid Category
+### Example 3: Extended Category Support
 
 **Input**:
 ```json
@@ -269,21 +279,33 @@ All input files are located in: `outputs/{projectName}/`
       "id": "POL-NOTIF-001",
       "category": "NOTIF",
       "rule": "푸시 알림 전송 제한"
+    },
+    {
+      "id": "POL-PAY-001",
+      "category": "PAY",
+      "rule": "결제 취소는 24시간 내 가능"
     }
   ]
 }
 ```
 
 **Processing**:
-- Detect invalid category "NOTIF"
-- Log warning: "Policy POL-NOTIF-001 has invalid category 'NOTIF', reassigning to BIZ"
-- Reassign to POL-BIZ-001
+- Detect extended category "NOTIF" (2-5자 영문 대문자 → 유효)
+- Detect extended category "PAY" (2-5자 영문 대문자 → 유효)
+- 확장 카테고리 그대로 사용
 - Continue
 
 **Output**:
 ```markdown
-### POL-BIZ-001: 푸시 알림 전송 제한
-**카테고리**: 비즈니스 로직
+## 6.8 알림 정책
+
+### POL-NOTIF-001: 푸시 알림 전송 제한
+**카테고리**: 알림
 **규칙**: 푸시 알림 전송 제한
-**참고**: 원래 카테고리 'NOTIF'는 표준 카테고리가 아니므로 BIZ로 분류됨
+
+## 6.9 결제 정책
+
+### POL-PAY-001: 결제 취소 기한
+**카테고리**: 결제
+**규칙**: 결제 취소는 24시간 내 가능
 ```

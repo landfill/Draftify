@@ -1,13 +1,13 @@
 # Draftify 프로젝트 관리 전략
 
-**버전**: 1.2
+**버전**: 1.3
 **최종 갱신**: 2025-12-29
 
 > **Note**: 이 문서는 프로젝트 관리의 완전한 명세입니다.
 
 ---
 
-## 출력 디렉토리 구조
+## 8.1 출력 디렉토리 구조
 
 ```
 outputs/
@@ -41,7 +41,7 @@ outputs/
 
 ---
 
-## 프로젝트명 결정 로직
+## 8.2 프로젝트명 결정 로직
 
 **우선순위**:
 1. CLI `--output` 옵션 (명시적 지정) ← **Record 모드에서 권장**
@@ -62,7 +62,7 @@ outputs/
 
 ---
 
-## 도메인 추론 규칙
+## 8.3 도메인 추론 규칙
 
 ```typescript
 function inferProjectNameFromURL(url: string): string {
@@ -87,7 +87,7 @@ function inferProjectNameFromURL(url: string): string {
 
 ---
 
-## Record 모드 복구 파일
+## 8.4 Record 모드 복구 파일
 
 **경로**: `~/.draftify/record-sessions/{url-hash}.recovery.json`
 
@@ -114,7 +114,7 @@ $ /auto-draft --url https://example.com --record
 
 ---
 
-## 버전 관리 (선택)
+## 8.5 버전 관리 (선택)
 
 **향후 계획**: `outputs/{projectName}/versions/` 구조 지원
 

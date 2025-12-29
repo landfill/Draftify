@@ -1,7 +1,7 @@
 # Draftify 시스템 아키텍처
 
-**버전**: 1.2
-**최종 갱신**: 2025-12-28
+**버전**: 1.3
+**최종 갱신**: 2025-12-29
 
 > **Note**: 이 문서는 시스템 아키텍처의 완전한 명세입니다.
 
@@ -131,14 +131,14 @@ Draftify는 **4계층 아키텍처**로 설계되었습니다:
      subagent_type: "general-purpose",
      description: "Execute auto-draft workflow",
      prompt: "You are the auto-draft-orchestrator agent...",
-     timeout: 1800000  // 30분
+     timeout: 2100000  // 35분
    })
    ```
 
 3. **독립 컨텍스트 실행**:
    - Main Agent는 독립된 컨텍스트에서 실행
    - 메인 세션 컨텍스트와 분리
-   - 30분 타임아웃
+   - 35분 타임아웃
 
 ---
 
@@ -231,7 +231,7 @@ const processResult = await Task({
 |------|------|------|---------|
 | **사용자 계층** | UI 제공 | CLI, 웹 브라우저 | 사용자 세션 |
 | **스킬 계층** | 인자 검증, Main Agent 호출 | Task tool | 메인 컨텍스트 (짧음) |
-| **오케스트레이션 계층** | Phase 제어, 에러 핸들링 | Task, Bash, Read/Write | 독립 컨텍스트 (30분) |
+| **오케스트레이션 계층** | Phase 제어, 에러 핸들링 | Task, Bash, Read/Write | 독립 컨텍스트 (35분) |
 | **실행 계층** | 실제 작업 수행 | MCP, Read/Write/Grep/Glob | 독립 컨텍스트 (각각) |
 | **데이터 계층** | 파일 저장소 | 파일 시스템 | 없음 (영속성) |
 
@@ -248,7 +248,7 @@ const processResult = await Task({
 
 **해결** (Skill + Main Agent):
 - ✅ Skill: 100줄 미만 (인자 검증만)
-- ✅ Main Agent: 독립 컨텍스트 (30분, 크롤링 데이터 포함)
+- ✅ Main Agent: 독립 컨텍스트 (35분, 크롤링 데이터 포함)
 - ✅ 메인 세션 컨텍스트 보호
 - ✅ 재시도 및 복구 가능
 

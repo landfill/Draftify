@@ -14,6 +14,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Design Scope Clarifications
+
+### Chrome DevTools MCP
+- **공식 MCP**로서 별도 API 명세 문서 작성 불필요
+- 공식 문서 참조: https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-servers
+- 설계 리뷰 시 "MCP 명세 부재" 지적 불필요
+
+### /ppt-generator Skill
+- **별도 프로세스**로 개발 예정
+- 본 auto-draft 설계 문서 범위 외
+- Phase 4에서 호출만 정의, 상세 설계는 별도 진행
+- 설계 리뷰 시 "ppt-generator 설계 부재" 지적 불필요
+
+---
+
 ## Architecture
 
 ### System Design Pattern: Skill + Main Agent + Sub-Agents
