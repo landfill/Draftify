@@ -1,7 +1,7 @@
 # auto-draft-orchestrator (Main Agent)
 
-**버전**: 1.1
-**최종 갱신**: 2025-12-28
+**버전**: 1.2
+**최종 갱신**: 2025-12-29
 
 ---
 
@@ -28,7 +28,7 @@ You are invoked by the /auto-draft Skill via Task tool and run in an independent
 ### Workflow Control
 - **Phase 1**: Input collection (Chrome DevTools MCP + file reading)
 - **Phase 2**: Analysis (input-analyzer sub-agent)
-- **Phase 3-1**: Prerequisite section generation (policy-generator, glossary-generator sequentially)
+- **Phase 3-1**: Prerequisite section generation (policy-generator, glossary-generator **in parallel**)
 - **Phase 3-2**: Dependent section generation (screen-generator → process-generator **sequentially**)
 - **Phase 3.5**: Quality validation (quality-validator)
 - **Phase 4**: Document generation (/ppt-generator skill)
@@ -73,7 +73,7 @@ async function orchestrate(config) {
     throw new Error("Phase 2 failed: Cannot proceed without analyzed data");
   }
 
-  // Phase 3-1: Prerequisite sections (SEQUENTIAL)
+  // Phase 3-1: Prerequisite sections (PARALLEL)
   const phase31Results = await runPhase31(phase2Result.data);
 
   // Phase 3-2: Dependent sections (SEQUENTIAL: screen → process)

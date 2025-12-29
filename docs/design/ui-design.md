@@ -1,7 +1,7 @@
 # Draftify 웹 UI 설계
 
-**버전**: 1.0
-**최종 갱신**: 2025-12-28
+**버전**: 1.1
+**최종 갱신**: 2025-12-29
 **관련 문서**: prd.md, tech-stack.md, workflow.md
 
 ---
@@ -398,7 +398,7 @@ const { data: status } = useQuery({
   - `[13:14:35] glossary-generator 시작`
 
 **백엔드 동작**:
-- policy-generator → glossary-generator (순차)
+- policy-generator + glossary-generator (병렬)
 
 ---
 

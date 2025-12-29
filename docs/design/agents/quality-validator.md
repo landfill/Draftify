@@ -1,8 +1,8 @@
 # quality-validator Agent
 
-**버전**: 1.2
+**버전**: 1.3
 **최종 갱신**: 2025-12-29
-**변경사항**: PASS/FAIL 조건 명확화 (Critical errors 개념 추가)
+**변경사항**: 확장 카테고리 지원 추가 (POL-[A-Z]{2,5}-\d{3} 패턴)
 
 ---
 
@@ -82,8 +82,12 @@ All input files are located in: `outputs/{projectName}/`
 #### 1. ID Format Validation
 
 **Policy IDs** (POL-{CATEGORY}-{SEQ}):
-- Must match: `POL-(AUTH|VAL|DATA|ERR|SEC|BIZ|UI)-\d{3}`
-- Example: POL-AUTH-001 ✅, POL-001 ❌, POL-AUTH-1 ❌
+- **기본 카테고리**: AUTH, VAL, DATA, ERR, SEC, BIZ, UI (7개)
+- **확장 카테고리**: NOTIF, PAY, SHIP, RPT, INTEG 등 (auto-draft-guideline.md Section 11.1 참조)
+- **정규식 패턴**: `POL-[A-Z]{2,5}-\d{3}` (2-5자 영문 대문자)
+- Example: POL-AUTH-001 ✅, POL-PAY-001 ✅, POL-001 ❌, POL-AUTH-1 ❌
+
+> **Note**: 확장 카테고리 사용 시 auto-draft-guideline.md에 해당 카테고리가 정의되어 있는지 확인 권장 (Warning)
 
 **Screen IDs** (SCR-{SEQ}):
 - Must match: `SCR-\d{3}`
@@ -218,7 +222,7 @@ FAIL 조건 (하나라도 해당):
    Read(file_path="outputs/{projectName}/sections/08-screen-definition.md")
 
 2. Search for policy IDs:
-   Grep(pattern="POL-[A-Z]+-\d{3}", path="outputs/{projectName}/sections", output_mode="content")
+   Grep(pattern="POL-[A-Z]{2,5}-\d{3}", path="outputs/{projectName}/sections", output_mode="content")
 
 3. Validate reference exists:
    Grep(pattern="POL-AUTH-001", path="outputs/{projectName}/sections/06-policy-definition.md", output_mode="files_with_matches")
