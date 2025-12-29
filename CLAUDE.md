@@ -48,7 +48,7 @@ Sub-Agents (specialized workers)
 2. **Phase 2**: Analysis
    - input-analyzer consolidates all inputs into `analyzed-structure.json`
 
-3. **Phase 3-1**: Prerequisite section generation (sequential)
+3. **Phase 3-1**: Prerequisite section generation (**parallel**)
    - policy-generator → `policy-definition.md`
    - glossary-generator → `glossary.md`
 
@@ -148,7 +148,7 @@ Per `docs/design/implementation-checklist.md`:
 
 **Solution**:
 - Skill = ~100 lines, argument validation, calls Main Agent via Task tool
-- Main Agent = independent 30min context, Phase 1-4 control, sub-agent lifecycle
+- Main Agent = independent 35min context, Phase 1-4 control, sub-agent lifecycle
 - Rationale documented in modularized design docs (see `docs/design/design-index.md`)
 
 ### Agent Dependencies
@@ -284,14 +284,17 @@ From `.claude/agents/agent-architect.md`:
 
 **Not Applied**:
 - Routing (all inputs follow same Phase 1-4 path)
-- Parallelization (Phase 3-2는 순차 실행으로 변경됨)
+
+**Partial Parallelization**:
+- Phase 3-1: policy + glossary 병렬 실행 (상호 의존성 없음)
+- Phase 3-2: screen → process 순차 실행 (의존성 있음)
 
 ---
 
 ## Common Pitfalls
 
 1. **Do not implement /auto-draft as Skill-only** - will exceed context limits
-2. **Do not parallelize Phase 3-1 and 3-2** - breaks policy ID dependencies
+2. **Phase 3-1 can run in parallel** (policy + glossary have no mutual dependencies)
 3. **Do not parallelize Phase 3-2 (screen/process)** - process-generator requires screen-definition.md
 4. **Do not assume SPA routing auto-detection works perfectly** - always support manual URL input
 5. **Do not use Git MCP** - removed from design, use direct source code reading instead

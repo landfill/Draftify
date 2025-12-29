@@ -1,7 +1,7 @@
 # Draftify 프로젝트 관리 전략
 
-**버전**: 1.1
-**최종 갱신**: 2025-12-28
+**버전**: 1.2
+**최종 갱신**: 2025-12-29
 
 > **Note**: 이 문서는 프로젝트 관리의 완전한 명세입니다.
 
@@ -89,24 +89,28 @@ function inferProjectNameFromURL(url: string): string {
 
 ## Record 모드 복구 파일
 
-**경로**: `outputs/{projectName}/.record-recovery.json`
+**경로**: `~/.draftify/record-sessions/{url-hash}.recovery.json`
 
-**주의사항**:
-- `--output` 없이 실행 시 기본값 `mvp-<timestamp>` 사용
-- 매번 다른 타임스탬프 → 복구 파일 경로가 달라짐 → **복구 불가**
-- **Record 모드에서는 반드시 `--output` 사용 권장**
+> URL 해시 기반 고정 경로 사용으로 `--output` 옵션 없이도 동일 URL 재실행 시 자동 복구 가능
+
+**복구 메커니즘**:
+- URL을 MD5 해시하여 고유 파일명 생성
+- 예: `https://example.com` → `~/.draftify/record-sessions/a1b2c3d4e5f6.recovery.json`
+- 프로젝트명과 무관하게 동일 URL은 동일 복구 파일 사용
 
 **복구 시나리오**:
 ```bash
 # 첫 실행 - 3개 화면 캡처 후 브라우저 크래시
-$ /auto-draft --url https://example.com --record --output my-project
+$ /auto-draft --url https://example.com --record
 
-# 재실행 - 기존 3개 화면을 복구하고 이어서 진행
-$ /auto-draft --url https://example.com --record --output my-project
+# 재실행 - 동일 URL이면 자동 복구 (--output 불필요)
+$ /auto-draft --url https://example.com --record
 ⚠️ 이전 Record 세션 발견!
 캡처된 화면: home, quiz, result (3개)
 이어서 진행하시겠습니까? (y/n)
 ```
+
+**상세 설계**: [record-mode-design.md](./record-mode-design.md) 참조
 
 ---
 
