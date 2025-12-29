@@ -1,14 +1,24 @@
 # Draftify 설정값 정의
 
-**버전**: 1.3
+**버전**: 1.4
 **최종 갱신**: 2025-12-29
 
-> **Note**: 이 문서는 Draftify 전체에서 사용되는 상수 및 기본값의 중앙 관리 문서입니다.
+> **Note**: 이 문서는 Draftify 전체에서 사용되는 **상수 및 기본값**의 중앙 관리 문서입니다.
 > 설정값 변경 시 이 문서만 수정하면 됩니다.
 
 ---
 
-## 크롤링 설정
+## 목차
+
+1. [크롤링 설정](#1-크롤링-설정)
+2. [타임아웃 설정](#2-타임아웃-설정)
+3. [재시도 설정](#3-재시도-설정)
+4. [Record 모드 설정](#4-record-모드-설정)
+5. [최소 성공 기준](#5-최소-성공-기준)
+
+---
+
+## 1. 크롤링 설정
 
 | 설정 | 기본값 | CLI 옵션 | 설명 |
 |------|--------|----------|------|
@@ -17,35 +27,43 @@
 | `PAGE_TIMEOUT` | 30초 | - | 페이지당 로딩 타임아웃 |
 | `MIN_PAGES_FOR_SUCCESS` | 3 | - | 자동 크롤링 성공 최소 페이지 수 |
 | `EARLY_STOP_PAGES` | 10 | - | 조기 종료 최소 페이지 수 |
+| `EARLY_STOP_TIME` | 10분 | - | 조기 종료 시간 조건 |
 
 ---
 
-## 타임아웃 설정 (Phase별)
+## 2. 타임아웃 설정
 
-| Phase | 작업 | 타임아웃 | 설명 |
-|-------|------|---------|------|
-| **전체** | 워크플로우 | 35분 | Main Agent 전체 타임아웃 |
-| **Phase 1** | 크롤링 (20페이지 기준) | 10분 | 20 × 30초 + 버퍼 |
-| **Phase 2** | input-analyzer | 5분 | LLM 호출 + JSON 생성 |
-| **Phase 3-1** | policy + glossary (병렬) | 3분 | 더 오래 걸리는 작업 기준 |
-| **Phase 3-2** | screen → process (순차) | 5분 | 3분 + 2분 |
-| **Phase 3.5** | quality-validator | 2분 | ID/참조 검증 |
-| **Phase 4** | ppt-generator | 10분 | PPT 변환 + 이미지 처리 |
+### 전체 워크플로우
+
+| 항목 | 값 |
+|------|-----|
+| Main Agent 전체 타임아웃 | **35분** |
+
+### Phase별 타임아웃
+
+| Phase | 타임아웃 | 비고 |
+|-------|---------|------|
+| Phase 1 (크롤링) | 10분 | 20페이지 × 30초 + 버퍼 |
+| Phase 2 (분석) | 5분 | input-analyzer |
+| Phase 3-1 (정책/용어) | 3분 | 병렬 실행, 더 긴 작업 기준 |
+| Phase 3-2 (화면/프로세스) | 5분 | 순차 실행 (3분 + 2분) |
+| Phase 3.5 (검증) | 2분 | quality-validator |
+| Phase 4 (PPT) | 10분 | ppt-generator |
 
 ### 개별 에이전트 타임아웃
 
-| 에이전트 | 타임아웃 |
-|---------|---------|
-| input-analyzer | 5분 (300,000ms) |
-| policy-generator | 3분 (180,000ms) |
-| glossary-generator | 2분 (120,000ms) |
-| screen-generator | 3분 (180,000ms) |
-| process-generator | 2분 (120,000ms) |
-| quality-validator | 2분 (120,000ms) |
+| 에이전트 | 타임아웃 | 밀리초 |
+|---------|---------|--------|
+| input-analyzer | 5분 | 300,000 |
+| policy-generator | 3분 | 180,000 |
+| glossary-generator | 2분 | 120,000 |
+| screen-generator | 3분 | 180,000 |
+| process-generator | 2분 | 120,000 |
+| quality-validator | 2분 | 120,000 |
 
 ---
 
-## 재시도 설정
+## 3. 재시도 설정
 
 | 에이전트 | 최대 재시도 | 백오프 간격 |
 |---------|-----------|------------|
@@ -58,68 +76,7 @@
 
 ---
 
-## ID 형식
-
-| ID 유형 | 형식 | 정규식 패턴 | 예시 |
-|--------|------|------------|------|
-| 정책 ID | `POL-{CATEGORY}-{SEQ}` | `POL-[A-Z]{2,5}-\d{3}` | POL-AUTH-001 |
-| 화면 ID | `SCR-{SEQ}` | `SCR-\d{3}` | SCR-001 |
-| 요소 ID | `{TYPE}-{SEQ}` | `(BTN\|FORM\|INPUT\|LINK\|TABLE\|MODAL)-\d{3}` | BTN-001 |
-| API ID | `API-{SEQ}` | `API-\d{3}` | API-001 |
-
-### 정책 카테고리 코드
-
-**기본 (7개)**:
-- `AUTH`: 인증/권한
-- `VAL`: 입력 검증
-- `DATA`: 데이터 처리
-- `ERR`: 에러 처리
-- `SEC`: 보안
-- `BIZ`: 비즈니스 로직
-- `UI`: UI/UX 정책
-
-**확장 (예시)**:
-- `NOTIF`: 알림
-- `PAY`: 결제
-- `SHIP`: 배송
-- `RPT`: 리포팅
-- `INTEG`: 외부 연동
-
----
-
-## 출력 디렉토리 구조
-
-```
-outputs/{projectName}/
-├── screenshots/           # 스크린샷
-├── analysis/              # 분석 결과
-│   ├── crawling-result.json
-│   └── analyzed-structure.json
-├── sections/              # 생성된 섹션
-│   ├── 05-glossary.md
-│   ├── 06-policy-definition.md
-│   ├── 07-process-flow.md
-│   └── 08-screen-definition.md
-├── validation/            # 검증 결과
-│   └── validation-report.md
-├── logs/                  # 로그
-└── final-draft.pptx       # 최종 산출물
-```
-
----
-
-## 최소 성공 기준
-
-| Phase | 최소 조건 |
-|-------|----------|
-| Phase 1 | URL 크롤링 또는 스크린샷 중 1개 이상 |
-| Phase 2 | analyzed-structure.json 생성 성공 |
-| Phase 3 | 최소 1개 섹션 생성 성공 |
-| Phase 4 | 마크다운 섹션 파일들 존재 (PPT는 선택) |
-
----
-
-## Record 모드 설정
+## 4. Record 모드 설정
 
 | 설정 | 값 | 설명 |
 |------|-----|------|
@@ -130,29 +87,44 @@ outputs/{projectName}/
 
 ---
 
-## Validation 점수 계산
+## 5. 최소 성공 기준
 
-```
-기본 점수: 100점
-
-감점 항목:
-- ID 형식 오류: -10점/건 (최대 -30)
-- 참조 무결성 오류: -5점/건 (최대 -20)
-- 중복 ID: -15점/건 (최대 -30)
-- 순차 번호 오류: -3점/건 (최대 -20)
-
-PASS 조건:
-- Score >= 80
-- Critical errors = 0 (ID 형식, 중복 ID)
-```
+| Phase | 최소 조건 |
+|-------|----------|
+| Phase 1 | URL 크롤링 또는 스크린샷 중 1개 이상 |
+| Phase 2 | analyzed-structure.json 생성 성공 |
+| Phase 3 | 최소 1개 섹션 생성 성공 |
+| Phase 4 | 마크다운 섹션 파일들 존재 (PPT는 선택) |
 
 ---
 
-## 참조
+## 참조 관계
 
-이 문서의 설정값은 다음 문서들에서 참조됩니다:
-- [error-handling.md](./error-handling.md) - 타임아웃, 재시도
-- [crawling-strategy.md](./crawling-strategy.md) - 크롤링 설정
-- [schemas.md](./schemas.md) - ID 형식
-- [agents/quality-validator.md](./agents/quality-validator.md) - Validation 점수
-- [agents/orchestrator.md](./agents/orchestrator.md) - Phase별 타임아웃
+이 문서는 **단일 진실 소스 (Single Source of Truth)**입니다.
+
+### 이 문서를 참조하는 문서
+
+| 문서 | 참조 항목 |
+|------|----------|
+| [error-handling.md](./error-handling.md) | 재시도 설정, 최소 성공 기준 |
+| [crawling-strategy.md](./crawling-strategy.md) | 크롤링 설정 |
+| [agents/orchestrator.md](./agents/orchestrator.md) | 타임아웃 설정 |
+| [agents/*.md](./agents/) | 개별 에이전트 타임아웃, 재시도 |
+
+### 다른 문서에서 정의하는 항목
+
+| 항목 | 정의 문서 |
+|------|----------|
+| 출력 디렉토리 구조 | [project-management.md](./project-management.md) |
+| ID 형식 (POL-*, SCR-*) | [schemas.md](./schemas.md) |
+| Validation 점수 계산 | [agents/quality-validator.md](./agents/quality-validator.md) |
+
+---
+
+## 변경 이력
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|----------|
+| 1.4 | 2025-12-29 | 문서 정리: 출력 구조/ID 형식/Validation 점수는 해당 문서 참조로 변경 |
+| 1.3 | 2025-12-29 | Phase 3-1 병렬 실행 반영 |
+| 1.0 | 2025-12-27 | 초기 작성 |

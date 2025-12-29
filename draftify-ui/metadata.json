@@ -1,0 +1,5 @@
+{
+  "name": "Draftify UI",
+  "description": "A high-fidelity React implementation of the Draftify application UI, featuring project creation, progress tracking, result visualization, and a recording overlay mode.",
+  "requestFramePermissions": []
+}
