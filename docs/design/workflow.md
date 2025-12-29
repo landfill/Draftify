@@ -47,11 +47,12 @@
   │
   ▼
 ┌─────────────────────────────────────┐
-│ Phase 3-1: 선행 섹션 생성 (순차)     │
+│ Phase 3-1: 선행 섹션 생성 (병렬)     │
 │                                     │
 │ ┌─────────────────┐                │
 │ │ policy-generator│ → policy.md    │
 │ └─────────────────┘                │
+│         ⫸ 동시 실행 ⫷              │
 │ ┌─────────────────┐                │
 │ │glossary-        │ → glossary.md  │
 │ │generator        │                │
@@ -110,7 +111,7 @@
 |-------|------------|------|------------|
 | **1. 입력 수집** | URL, 문서 파일들, 스크린샷, 소스코드(선택) | MCP 크롤링, 파일 읽기 | crawling-result.json, 문서 텍스트 |
 | **2. 분석** | crawling-result.json, 문서 텍스트, 소스코드 | input-analyzer 에이전트 | analyzed-structure.json |
-| **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 순차 실행 | policy.md, glossary.md |
+| **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 **병렬** 실행 | policy.md, glossary.md |
 | **3-2. 후행 생성** | analyzed-structure.json, policy.md, screen.md | 2개 에이전트 순차 실행 (screen → process) | screen.md, process.md |
 | **3.5. 검증** | 모든 섹션.md, guideline | validator 에이전트 | validation-report.md (PASS/FAIL) |
 | **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (ppt-generator) | final-draft.pptx 또는 HTML |
@@ -180,10 +181,12 @@ URL ────┐
 
 ### Phase 3-1: 선행 섹션 생성
 - **목표**: 정책 및 용어 섹션 생성
-- **에이전트**: policy-generator, glossary-generator (순차)
+- **에이전트**: policy-generator, glossary-generator (**병렬**)
 - **출력**: `policy.md`, `glossary.md`
+- **타임아웃**: 3분 (병렬 실행, 더 오래 걸리는 작업 기준)
 - **실패 시**: 빈 섹션 생성 + 계속 진행
 - **왜 선행?**: Phase 3-2가 정책 ID를 참조하기 때문
+- **왜 병렬?**: 두 에이전트가 서로 의존성 없음 (동일한 analyzed-structure.json만 참조)
 
 ### Phase 3-2: 후행 섹션 생성
 - **목표**: 화면 및 프로세스 섹션 생성

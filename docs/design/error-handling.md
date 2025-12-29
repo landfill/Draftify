@@ -1,7 +1,8 @@
 # Draftify 에러 핸들링 및 워크플로우 제어
 
-**버전**: 1.1
-**최종 갱신**: 2025-12-28
+**버전**: 1.2
+**최종 갱신**: 2025-12-29
+**변경사항**: Phase 3-1 병렬 실행으로 수정 (orchestrator.md와 일치)
 
 > **Note**: 이 문서는 에러 핸들링의 완전한 명세입니다.
 
@@ -67,11 +68,11 @@ ${JSON.stringify(config, null, 2)}
 4. Apply minimum success criteria
 5. Save all intermediate results to outputs/<project>/
 
-**Timeout**: 30 minutes
+**Timeout**: 35 minutes
 
 Start by determining the project name and creating the output directory.
     `,
-    timeout: 1800000, // 30분
+    timeout: 2100000, // 35분
   });
 
   // 4. 결과 반환
@@ -135,7 +136,7 @@ async function orchestrate(config) {
 
 ### 서브 에이전트 실행 전략
 
-**순차 실행 (Phase 2, 3-1)**:
+**순차 실행 (Phase 2)**:
 ```typescript
 // Main Agent 내부에서 서브 에이전트 호출
 
@@ -143,22 +144,28 @@ async function orchestrate(config) {
 const analyzerResult = await Task({
   subagent_type: "general-purpose",
   prompt: "Analyze inputs...",
-  timeout: 600000, // 10분
-});
-
-// policy-generator와 glossary-generator: 순차 실행
-const policyResult = await Task({
-  subagent_type: "general-purpose",
-  prompt: "Generate policy definitions...",
   timeout: 300000, // 5분
 });
-
-const glossaryResult = await Task({
-  subagent_type: "general-purpose",
-  prompt: "Generate glossary...",
-  timeout: 180000, // 3분
-});
 ```
+
+**병렬 실행 (Phase 3-1)**:
+```typescript
+// policy-generator와 glossary-generator: 병렬 실행 (상호 의존성 없음)
+const [policyResult, glossaryResult] = await Promise.all([
+  Task({
+    subagent_type: "general-purpose",
+    prompt: "Generate policy definitions...",
+    timeout: 180000, // 3분
+  }),
+  Task({
+    subagent_type: "general-purpose",
+    prompt: "Generate glossary...",
+    timeout: 120000, // 2분
+  })
+]);
+```
+
+> **Note**: policy-generator와 glossary-generator는 모두 analyzed-structure.json만 참조하고 서로의 출력을 참조하지 않으므로 병렬 실행 가능
 
 **순차 실행 (Phase 3-2: screen → process)**:
 ```typescript
@@ -369,16 +376,45 @@ const processResult = await Task({
 
 ## 7.6 타임아웃 설정
 
-| 작업 | 타임아웃 | 근거 |
-|------|---------|------|
-| **URL 1개 크롤링** | 30초 | 로컬 개발 서버 응답 시간 |
-| **전체 크롤링 (최대 50페이지)** | 25분 | 50 × 30초 |
-| **input-analyzer** | 10분 | LLM 호출 + JSON 생성 |
-| **policy/screen/process-generator** | 5분 각 | 섹션별 LLM 호출 |
-| **glossary-generator** | 3분 | 단순 목록 생성 |
-| **quality-validator** | 5분 | 모든 섹션 검토 |
-| **PPT 생성** | 3분 | python-pptx 처리 |
-| **전체 워크플로우** | **30분** | PRD 요구사항 |
+### 기본 가정
+- **예상 페이지 수**: 20페이지 이내 (일반적인 목업/MVP 기준)
+- **최대 페이지 수**: 50페이지 (`--max-pages` 기본값)
+
+### Phase별 타임아웃
+
+| Phase | 작업 | 타임아웃 | 근거 |
+|-------|------|---------|------|
+| **1** | URL 1개 크롤링 | 30초 | 로컬 개발 서버 응답 시간 |
+| **1** | 전체 크롤링 (20페이지 기준) | **10분** | 20 × 30초 |
+| **2** | input-analyzer | **5분** | LLM 호출 + JSON 생성 |
+| **3-1** | policy-generator | 3분 | 정책 섹션 생성 |
+| **3-1** | glossary-generator | 2분 | 용어집 생성 (단순) |
+| **3-1** | **Phase 3-1 전체 (병렬)** | **3분** | 더 오래 걸리는 작업 기준 |
+| **3-2** | screen-generator | 3분 | 화면정의서 생성 |
+| **3-2** | process-generator | 2분 | 프로세스 흐름 생성 |
+| **3-2** | **Phase 3-2 전체 (순차)** | **5분** | screen → process 순차 실행 |
+| **3.5** | quality-validator | **2분** | ID/참조 검증 |
+| **4** | PPT 생성 | **10분** | python-pptx + 이미지 처리 |
+| - | **전체 워크플로우** | **35분** | 합계 + 버퍼 |
+
+### 타임아웃 예산 요약
+
+```
+Phase 1 (크롤링):     10분
+Phase 2 (분석):        5분
+Phase 3-1 (병렬):      3분  ← policy + glossary 동시 실행
+Phase 3-2 (순차):      5분  ← screen → process
+Phase 3.5 (검증):      2분
+Phase 4 (PPT):        10분
+────────────────────────────
+합계:                 35분
+```
+
+### 조기 종료 조건
+
+**Phase 1 크롤링 조기 종료**:
+- 최소 10페이지 발견 + 10분 경과 시 → 크롤링 종료, Phase 2 진행
+- 50페이지 도달 시 → 즉시 종료
 
 **타임아웃 초과 시**:
 - 해당 작업 중단

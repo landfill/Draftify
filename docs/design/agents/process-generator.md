@@ -1,8 +1,8 @@
 # process-generator Agent
 
-**버전**: 1.2
-**최종 갱신**: 2025-12-28
-**변경사항**: Phase 3-2 순차 실행으로 변경 (screen → process)
+**버전**: 1.3
+**최종 갱신**: 2025-12-29
+**변경사항**: 스키마 통일 (screen → screen_id, condition 객체 구조화) - schemas.md와 일치
 
 ---
 
@@ -93,20 +93,36 @@ All input files are located in: `outputs/{projectName}/`
     "steps": [
       {
         "order": 1,
-        "screen": "SCR-001",
-        "action": "사용자가 '로그인' 버튼 클릭"
+        "screen_id": "SCR-001",
+        "action": "사용자가 '로그인' 버튼 클릭",
+        "condition": {
+          "type": "always",
+          "expression": null,
+          "policy_ref": null
+        },
+        "next_screen": "SCR-002"
       },
       {
         "order": 2,
-        "screen": "SCR-002",
+        "screen_id": "SCR-002",
         "action": "이메일과 비밀번호 입력",
-        "policy": "POL-VAL-001"
+        "condition": {
+          "type": "policy_check",
+          "expression": "form.isValid === true",
+          "policy_ref": "POL-VAL-001"
+        },
+        "next_screen": "SCR-001"
       },
       {
         "order": 3,
-        "screen": "SCR-001",
+        "screen_id": "SCR-001",
         "action": "로그인 성공 후 홈으로 이동",
-        "condition": "인증 성공"
+        "condition": {
+          "type": "user_state",
+          "expression": "user.isAuthenticated === true",
+          "policy_ref": null
+        },
+        "next_screen": null
       }
     ],
     "exception": "로그인 실패 시 에러 메시지 표시 (POL-AUTH-001)"
@@ -281,19 +297,24 @@ All input files are located in: `outputs/{projectName}/`
       "steps": [
         {
           "order": 1,
-          "screen": "SCR-001",
-          "action": "로그인 버튼 클릭"
+          "screen_id": "SCR-001",
+          "action": "로그인 버튼 클릭",
+          "condition": { "type": "always", "expression": null, "policy_ref": null },
+          "next_screen": "SCR-002"
         },
         {
           "order": 2,
-          "screen": "SCR-002",
+          "screen_id": "SCR-002",
           "action": "이메일/비밀번호 입력",
-          "policy": "POL-VAL-001"
+          "condition": { "type": "policy_check", "expression": "form.isValid", "policy_ref": "POL-VAL-001" },
+          "next_screen": "SCR-001"
         },
         {
           "order": 3,
-          "screen": "SCR-001",
-          "action": "인증 성공 후 홈으로 복귀"
+          "screen_id": "SCR-001",
+          "action": "인증 성공 후 홈으로 복귀",
+          "condition": { "type": "user_state", "expression": "user.isAuthenticated", "policy_ref": null },
+          "next_screen": null
         }
       ],
       "exception": "로그인 실패 시 POL-AUTH-001 적용"
@@ -386,8 +407,10 @@ SCR-001 (Home)
       "steps": [
         {
           "order": 1,
-          "screen": "SCR-999",
-          "action": "테스트 화면"
+          "screen_id": "SCR-999",
+          "action": "테스트 화면",
+          "condition": { "type": "always", "expression": null, "policy_ref": null },
+          "next_screen": null
         }
       ]
     }

@@ -165,12 +165,12 @@ await chromeDevTools.take_screenshot()
 
 #### 2. Main Agent → 서브 에이전트
 
-**Task tool로 순차 실행**:
+**Task tool로 실행**:
 
 | Phase | 에이전트 | 실행 방식 | 의존성 |
 |-------|---------|---------|--------|
 | **Phase 2** | input-analyzer | 순차 (단일) | Phase 1 완료 필수 |
-| **Phase 3-1** | policy-generator, glossary-generator | 순차 (2개) | Phase 2 완료 필수 |
+| **Phase 3-1** | policy-generator, glossary-generator | **병렬** (2개) | Phase 2 완료 필수 |
 | **Phase 3-2** | screen-generator → process-generator | **순차** (2개) | Phase 3-1 완료 필수, screen → process 순서 |
 | **Phase 3.5** | quality-validator | 순차 (단일) | Phase 3-2 완료 필수 |
 

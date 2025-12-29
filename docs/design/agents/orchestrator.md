@@ -152,7 +152,7 @@ Read the input-analyzer agent prompt from docs/design/agents/input-analyzer.md.
 
 Follow all instructions in the agent prompt file.
   `,
-  timeout: 600000, // 10 minutes
+  timeout: 300000, // 5 minutes
 });
 ```
 
@@ -162,19 +162,21 @@ Follow all instructions in the agent prompt file.
 
 ---
 
-### Phase 3-1: Prerequisite Section Generation (SEQUENTIAL)
+### Phase 3-1: Prerequisite Section Generation (PARALLEL)
 
 **Sub-Agents**: policy-generator, glossary-generator
 
-**Execution**: Sequential (run one after another)
+**Execution**: **PARALLEL** (두 에이전트 동시 실행, 총 3분)
 
 **Invocation**:
 ```typescript
-// 1. policy-generator
-const policyResult = await Task({
-  subagent_type: "general-purpose",
-  description: "Generate policy definitions",
-  prompt: `You are the policy-generator agent.
+// policy-generator와 glossary-generator를 병렬로 실행
+const [policyResult, glossaryResult] = await Promise.all([
+  // 1. policy-generator
+  Task({
+    subagent_type: "general-purpose",
+    description: "Generate policy definitions",
+    prompt: `You are the policy-generator agent.
 
 Read the policy-generator agent prompt from docs/design/agents/policy-generator.md.
 
@@ -182,15 +184,15 @@ Read the policy-generator agent prompt from docs/design/agents/policy-generator.
 **Output**: outputs/{projectName}/sections/06-policy-definition.md
 
 Follow all instructions in the agent prompt file.
-  `,
-  timeout: 300000, // 5 minutes
-});
+    `,
+    timeout: 180000, // 3 minutes
+  }),
 
-// 2. glossary-generator
-const glossaryResult = await Task({
-  subagent_type: "general-purpose",
-  description: "Generate glossary",
-  prompt: `You are the glossary-generator agent.
+  // 2. glossary-generator
+  Task({
+    subagent_type: "general-purpose",
+    description: "Generate glossary",
+    prompt: `You are the glossary-generator agent.
 
 Read the glossary-generator agent prompt from docs/design/agents/glossary-generator.md.
 
@@ -198,10 +200,13 @@ Read the glossary-generator agent prompt from docs/design/agents/glossary-genera
 **Output**: outputs/{projectName}/sections/05-glossary.md
 
 Follow all instructions in the agent prompt file.
-  `,
-  timeout: 180000, // 3 minutes
-});
+    `,
+    timeout: 120000, // 2 minutes
+  })
+]);
 ```
+
+**Phase 3-1 Total Timeout**: 3분 (더 오래 걸리는 작업 기준)
 
 **Error Handling**: See error-handling.md Section 7.4 Phase 3-1
 
@@ -236,7 +241,7 @@ Read the screen-generator agent prompt from docs/design/agents/screen-generator.
 
 Follow all instructions in the agent prompt file.
   `,
-  timeout: 300000, // 5 minutes
+  timeout: 180000, // 3 minutes
 });
 
 // Phase 3-2b: Process flows (screen-definition.md 생성 후 실행)
@@ -256,9 +261,11 @@ Read the process-generator agent prompt from docs/design/agents/process-generato
 
 Follow all instructions in the agent prompt file.
   `,
-  timeout: 300000, // 5 minutes
+  timeout: 120000, // 2 minutes
 });
 ```
+
+**Phase 3-2 Total Timeout**: 5분 (screen 3분 + process 2분 순차)
 
 **Error Handling**: See error-handling.md Section 7.4 Phase 3-2
 
@@ -288,7 +295,7 @@ Read the quality-validator agent prompt from docs/design/agents/quality-validato
 
 Follow all instructions in the agent prompt file.
   `,
-  timeout: 300000, // 5 minutes
+  timeout: 120000, // 2 minutes
 });
 ```
 
@@ -407,18 +414,22 @@ outputs/{projectName}/
 
 ## 10. Timeout
 
-**Total Workflow**: 30 minutes (1,800,000ms)
+**Total Workflow**: 35 minutes (2,100,000ms)
 
 **Phase Budget**:
-- Phase 1: 15 minutes (crawling 50 pages)
-- Phase 2: 5 minutes (input-analyzer)
-- Phase 3-1: 5 minutes (policy + glossary sequential)
-- Phase 3-2: 10 minutes (screen 5min + process 5min sequential)
-- Phase 3.5: 3 minutes (quality-validator)
-- Phase 4: 2 minutes (ppt-generator)
-- **Total**: 40 minutes → **30분 예산 초과 시 Phase 1 조기 종료**
+| Phase | 작업 | 타임아웃 |
+|-------|------|---------|
+| 1 | 크롤링 (20페이지 기준) | 10분 |
+| 2 | input-analyzer | 5분 |
+| 3-1 | policy + glossary (**병렬**) | 3분 |
+| 3-2 | screen → process (**순차**) | 5분 |
+| 3.5 | quality-validator | 2분 |
+| 4 | ppt-generator | 10분 |
+| - | **합계** | **35분** |
 
-> **Note**: 30분 예산 내 완료를 위해 Phase 1에서 조기 종료 가능 (최소 10페이지 확보 시)
+**조기 종료 조건**:
+- Phase 1: 최소 10페이지 발견 + 10분 경과 시 → Phase 2 진행
+- 50페이지 도달 시 → 즉시 종료
 
 If timeout is exceeded at any phase, apply retry/fallback strategies per error-handling.md.
 

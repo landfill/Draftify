@@ -1,7 +1,8 @@
 # quality-validator Agent
 
-**버전**: 1.1
-**최종 갱신**: 2025-12-28
+**버전**: 1.2
+**최종 갱신**: 2025-12-29
+**변경사항**: PASS/FAIL 조건 명확화 (Critical errors 개념 추가)
 
 ---
 
@@ -155,8 +156,16 @@ Total Score = 100
 - Duplicate IDs: -15 per error (max -30)
 - Sequential numbering errors: -3 per error (max -20)
 
-PASS: Score >= 80
-FAIL: Score < 80
+PASS 조건 (모두 충족):
+  1. Score >= 80
+  2. Critical errors = 0 (ID format, Duplicate IDs)
+
+FAIL 조건 (하나라도 해당):
+  1. Score < 80
+  2. Critical errors > 0
+
+※ Reference integrity errors와 Sequential numbering errors는
+   Warning으로 처리되어 점수만 차감, FAIL 조건에 해당하지 않음
 ```
 
 ## 6. Error Handling (에러 핸들링)
@@ -265,45 +274,45 @@ FAIL: Score < 80
 문서 품질이 우수합니다. 추가 작업 없이 사용 가능합니다.
 ```
 
-### Example 2: FAIL Case - Broken References
+### Example 2: PASS with Warnings - Broken References
 
 **Input**:
 - policy-definition.md: POL-AUTH-001, POL-VAL-001
-- screen-definition.md: SCR-001 (references POL-AUTH-002) ❌
-- process-flow.md: references SCR-001, SCR-999 ❌
+- screen-definition.md: SCR-001 (references POL-AUTH-002) ⚠️
+- process-flow.md: references SCR-001, SCR-999 ⚠️
 
 **Validation Results**:
 - ID Format: ✅ All valid
-- Reference Integrity: ❌ 2 broken references
+- Reference Integrity: ⚠️ 2 broken references (Warning)
 - Duplicates: ✅ None
 - Sequential Numbering: ✅ Sequential
 
-**Score**: 100 - 5×2 = 90 → **FAIL** (broken references)
+**Score**: 100 - 5×2 = 90 → **PASS** (warnings only, no critical errors)
 
 **Output**:
 ```markdown
 # Validation Report
 
-**Status**: ❌ FAIL
+**Status**: ✅ PASS (with warnings)
 **Score**: 90/100
 **Date**: 2025-12-28
 
 ## Validation Summary
 
-참조 무결성 검증 실패 (2개 오류)
+검증 통과 (2개 경고)
 
-## Error List
+## Warning List
 
-### Reference Integrity Errors
+### Reference Integrity Warnings
 
 1. **screen-definition.md:45**
    - References: POL-AUTH-002
-   - Error: POL-AUTH-002 not found in policy-definition.md
+   - Warning: POL-AUTH-002 not found in policy-definition.md
    - Fix: Add POL-AUTH-002 to policy-definition.md or remove reference
 
 2. **process-flow.md:78**
    - References: SCR-999
-   - Error: SCR-999 not found in screen-definition.md
+   - Warning: SCR-999 not found in screen-definition.md
    - Fix: Add SCR-999 to screen-definition.md or correct reference to existing screen
 
 ## Recommendations
@@ -321,10 +330,10 @@ FAIL: Score < 80
 **Validation Results**:
 - ID Format: ✅ Valid
 - Reference Integrity: ✅ OK
-- Duplicates: ❌ 1 duplicate
+- Duplicates: ❌ 1 duplicate (Critical Error)
 - Sequential Numbering: ✅ OK
 
-**Score**: 100 - 15 = 85 → **FAIL**
+**Score**: 100 - 15 = 85 → **FAIL** (critical error: duplicate ID)
 
 **Output**:
 ```markdown
@@ -334,9 +343,13 @@ FAIL: Score < 80
 **Score**: 85/100
 **Date**: 2025-12-28
 
+## Critical Error
+
+중복 ID가 발견되어 검증 실패
+
 ## Error List
 
-### Duplicate ID Errors
+### Duplicate ID Errors (Critical)
 
 1. **POL-AUTH-001**
    - Found in: policy-definition.md (line 45, line 120)
@@ -347,3 +360,4 @@ FAIL: Score < 80
 
 policy-definition.md를 재생성하거나, 중복 정의 제거 후 검증 재실행
 ```
+

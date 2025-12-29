@@ -246,15 +246,15 @@ When creating sub-agent prompts:
 
 **Critical**: URL normalization (`/home` = `/home/` = `/home?`), BFS traversal, priority scoring when 50-page limit hit.
 
-### Timeout Budget (30min total)
-- Phase 1 crawling: 15min max (50 pages, 조기 종료 가능)
+### Timeout Budget (35min total)
+- Phase 1 crawling: 10min (20 pages 기준, 조기 종료 가능)
 - Phase 2 input-analyzer: 5min
-- Phase 3-1 generators (sequential): policy 3min + glossary 2min = 5min
-- Phase 3-2 generators (sequential): screen 5min + process 5min = 10min
-- Phase 3.5 quality-validator: 3min
-- Phase 4 ppt-generator: 2min
+- Phase 3-1 generators (**parallel**): policy 3min ∥ glossary 2min = **3min**
+- Phase 3-2 generators (sequential): screen 3min → process 2min = **5min**
+- Phase 3.5 quality-validator: 2min
+- Phase 4 ppt-generator: **10min**
 
-> **Note**: 30분 예산 초과 시 Phase 1에서 조기 종료 (최소 10페이지 확보)
+> **Note**: Phase 1 조기 종료 조건: 최소 10페이지 확보 + 10분 경과
 
 ---
 
