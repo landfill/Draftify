@@ -26,3 +26,7 @@ npm-debug.log*
 # Cache
 .cache/
 .vite/
+
+# 임시
+draft-ppt-skill/
+draftify-ppt.zip

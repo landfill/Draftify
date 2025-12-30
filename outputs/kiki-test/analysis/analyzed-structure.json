@@ -1,0 +1,96 @@
+{
+  "project": {
+    "name": "KIKI Shop",
+    "version": "1.0",
+    "description": "온라인 쇼핑몰 서비스",
+    "createdAt": "2024-12-30",
+    "author": "Draftify Auto Generator"
+  },
+  "screens": [
+    {
+      "id": "SCR-001",
+      "name": "메인 화면",
+      "purpose": "서비스 진입점, 주요 상품 및 프로모션 노출",
+      "url": "/",
+      "processStep": "탐색"
+    },
+    {
+      "id": "SCR-002",
+      "name": "로그인/회원가입",
+      "purpose": "사용자 인증 및 신규 회원 등록",
+      "url": "/auth",
+      "processStep": "인증"
+    },
+    {
+      "id": "SCR-003",
+      "name": "상품 목록",
+      "purpose": "카테고리별 상품 브라우징 및 필터링",
+      "url": "/products",
+      "processStep": "탐색"
+    },
+    {
+      "id": "SCR-004",
+      "name": "상품 상세",
+      "purpose": "개별 상품 정보 확인 및 옵션 선택",
+      "url": "/products/:id",
+      "processStep": "탐색"
+    },
+    {
+      "id": "SCR-005",
+      "name": "장바구니",
+      "purpose": "선택한 상품 관리 및 수량 조절",
+      "url": "/cart",
+      "processStep": "주문 준비"
+    },
+    {
+      "id": "SCR-006",
+      "name": "주문/결제",
+      "purpose": "배송지 입력 및 결제 수단 선택",
+      "url": "/checkout",
+      "processStep": "결제"
+    },
+    {
+      "id": "SCR-007",
+      "name": "주문 완료",
+      "purpose": "주문 성공 확인 및 주문 번호 안내",
+      "url": "/order/complete",
+      "processStep": "완료"
+    },
+    {
+      "id": "SCR-008",
+      "name": "마이페이지",
+      "purpose": "회원 정보 및 활동 내역 조회",
+      "url": "/mypage",
+      "processStep": "관리"
+    },
+    {
+      "id": "SCR-009",
+      "name": "주문 내역",
+      "purpose": "과거 주문 이력 조회 및 상태 확인",
+      "url": "/mypage/orders",
+      "processStep": "관리"
+    },
+    {
+      "id": "SCR-010",
+      "name": "검색 결과",
+      "purpose": "키워드 기반 상품 검색 결과 표시",
+      "url": "/search",
+      "processStep": "탐색"
+    }
+  ],
+  "glossary": [
+    {"term": "SKU", "definition": "Stock Keeping Unit, 재고 관리 단위"},
+    {"term": "PG", "definition": "Payment Gateway, 결제 대행사"},
+    {"term": "CS", "definition": "Customer Service, 고객 서비스"}
+  ],
+  "policies": [
+    {"id": "POL-AUTH-001", "category": "AUTH", "description": "로그인 실패 5회 시 10분 잠금"},
+    {"id": "POL-BIZ-001", "category": "BIZ", "description": "5만원 이상 무료 배송"},
+    {"id": "POL-PAY-001", "category": "PAY", "description": "결제 후 30분 내 취소 가능"}
+  ],
+  "references": [
+    "KIKI Shop PRD v1.0",
+    "결제 연동 가이드 (KG이니시스)",
+    "UI/UX 디자인 시스템 v2.0"
+  ]
+}

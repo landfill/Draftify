@@ -3,7 +3,16 @@
     "allow": [
       "WebSearch",
       "Bash(claude mcp add:*)",
-      "WebFetch(domain:kiki-lights.vercel.app)"
+      "WebFetch(domain:kiki-lights.vercel.app)",
+      "Bash(chmod:*)",
+      "Bash(python3:*)",
+      "Bash(brew list:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(open:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(cat:*)",
+      "Bash(python scripts/generate_ppt.py:*)"
     ]
   }
 }
