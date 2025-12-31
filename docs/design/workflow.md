@@ -12,6 +12,7 @@
 1. [전체 데이터 흐름도](#41-전체-데이터-흐름도)
 2. [단계별 데이터 변환](#42-단계별-데이터-변환)
 3. [데이터 의존성 그래프](#43-데이터-의존성-그래프)
+4. [결과 수집 및 반영 규칙](#44-결과-수집-및-반영-규칙)
 
 ---
 
@@ -50,33 +51,33 @@
 │ Phase 3-1: 선행 섹션 생성 (병렬)     │
 │                                     │
 │ ┌─────────────────┐                │
-│ │ policy-generator│ → policy.md    │
+│ │ policy-generator│ → 06-policy-definition.md │
 │ └─────────────────┘                │
 │         ⫸ 동시 실행 ⫷              │
 │ ┌─────────────────┐                │
-│ │glossary-        │ → glossary.md  │
+│ │glossary-        │ → 05-glossary.md │
 │ │generator        │                │
 │ └─────────────────┘                │
 └─────────────────────────────────────┘
   │
-  │ policy.md, glossary.md
+  │ 06-policy-definition.md, 05-glossary.md
   │
   ▼
 ┌─────────────────────────────────────┐
 │ Phase 3-2: 후행 섹션 생성 (순차)     │
 │                                     │
 │ ┌─────────────────┐                │
-│ │screen-generator │ → screen.md    │
+│ │screen-generator │ → 08-screen-definition.md │
 │ │(정책 ID 참조)    │                │
 │ └────────┬────────┘                │
 │          ↓                          │
 │ ┌─────────────────┐                │
-│ │process-generator│ → process.md   │
+│ │process-generator│ → 07-process-flow.md │
 │ │(화면 ID 참조)    │                │
 │ └─────────────────┘                │
 └─────────────────────────────────────┘
   │
-  │ 9개 섹션 마크다운 파일들
+  │ 10개 섹션 마크다운 파일들
   │
   ▼
 ┌─────────────────────────────────────┐
@@ -111,8 +112,8 @@
 |-------|------------|------|------------|
 | **1. 입력 수집** | URL, 문서 파일들, 스크린샷, 소스코드(선택) | MCP 크롤링, 파일 읽기 | crawling-result.json, 문서 텍스트 |
 | **2. 분석** | crawling-result.json, 문서 텍스트, 소스코드 | input-analyzer 에이전트 | analyzed-structure.json |
-| **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 **병렬** 실행 | policy.md, glossary.md |
-| **3-2. 후행 생성** | analyzed-structure.json, policy.md, screen.md | 2개 에이전트 순차 실행 (screen → process) | screen.md, process.md |
+| **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 **병렬** 실행 | 06-policy-definition.md, 05-glossary.md |
+| **3-2. 후행 생성** | analyzed-structure.json, 06-policy-definition.md, 08-screen-definition.md | 2개 에이전트 순차 실행 (screen → process) | 08-screen-definition.md, 07-process-flow.md |
 | **3.5. 검증** | 모든 섹션.md, guideline | validator 에이전트 | validation-report.md (PASS/FAIL) |
 | **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (ppt-generator) | final-draft.pptx 또는 HTML |
 
@@ -133,11 +134,11 @@ URL ────┐
                             ▼                               ▼                   │
                     [policy-generator]              [glossary-generator]        │
                             │                               │                   │
-                            │ policy.md                     │ glossary.md       │
+                            │ 06-policy-definition.md       │ 05-glossary.md    │
                             └───────────────┬───────────────┘                   │
                                             │                                   │
                                             ▼                                   │
-                                    policy.md, glossary.md                      │
+                                    06-policy-definition.md, 05-glossary.md     │
                                             │                                   │
                             ┌───────────────┴───────────────────────────────────┘
                             │
@@ -145,7 +146,7 @@ URL ────┐
                     [screen-generator]
                     (정책 ID 참조)
                             │
-                            │ screen.md
+                            │ 08-screen-definition.md
                             ▼
                     [process-generator]
                     (정책 ID + 화면 ID 참조)
@@ -163,6 +164,27 @@ URL ────┐
 ```
 
 ---
+
+## 4.4 결과 수집 및 반영 규칙
+
+### 순차 수집 원칙
+병렬 실행 결과는 **항상 순차적으로 수집**한다.
+
+수집 순서:
+1. 결과 수신
+2. 충돌 여부 검증
+3. 기준 충족 여부 판단
+4. 반영 또는 폐기 결정
+
+### 작업 단위/소유권 규칙
+- **ID 생성 소유권**
+  - 정책 ID: policy-generator만 생성/재할당
+  - 화면/요소 ID: screen-generator만 생성/재할당
+  - process-generator는 기존 ID만 참조
+  - quality-validator는 읽기 전용
+- **파일 소유권**
+  - 각 섹션 파일은 해당 에이전트만 생성/수정
+  - 오케스트레이터는 결과를 선택/수집만 수행 (직접 수정 금지)
 
 ## Phase별 핵심 포인트
 
@@ -182,7 +204,7 @@ URL ────┐
 ### Phase 3-1: 선행 섹션 생성
 - **목표**: 정책 및 용어 섹션 생성
 - **에이전트**: policy-generator, glossary-generator (**병렬**)
-- **출력**: `policy.md`, `glossary.md`
+- **출력**: `06-policy-definition.md`, `05-glossary.md`
 - **타임아웃**: 3분 (병렬 실행, 더 오래 걸리는 작업 기준)
 - **실패 시**: 빈 섹션 생성 + 계속 진행
 - **왜 선행?**: Phase 3-2가 정책 ID를 참조하기 때문
@@ -191,9 +213,9 @@ URL ────┐
 ### Phase 3-2: 후행 섹션 생성
 - **목표**: 화면 및 프로세스 섹션 생성
 - **에이전트**: screen-generator → process-generator (순차)
-- **출력**: `screen.md`, `process.md`
+- **출력**: `08-screen-definition.md`, `07-process-flow.md`
 - **실패 시**: 부분 성공 (성공한 섹션만 포함)
-- **왜 순차?**: process-generator가 screen.md의 화면 ID를 참조하기 때문
+- **왜 순차?**: process-generator가 08-screen-definition.md의 화면 ID를 참조하기 때문
 
 ### Phase 3.5: 품질 검증
 - **목표**: 생성된 섹션들의 ID 참조 무결성 검증
@@ -215,14 +237,14 @@ URL ────┐
 ```
 Phase 1 → Phase 2 → Phase 3-1 → Phase 3-2 → Phase 3.5 → Phase 4
                         ↓           ↓
-                    policy.md   screen.md
-                    glossary.md     ↓
-                                process.md
+                    06-policy-definition.md   08-screen-definition.md
+                    05-glossary.md                 ↓
+                                              07-process-flow.md
 ```
 
 **Phase 3-2 내부 순서**:
-1. screen-generator → screen.md 생성
-2. process-generator → screen.md 참조하여 process.md 생성
+1. screen-generator → 08-screen-definition.md 생성
+2. process-generator → 08-screen-definition.md 참조하여 07-process-flow.md 생성
 
 ---
 

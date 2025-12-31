@@ -175,9 +175,6 @@ FAIL 조건 (하나라도 해당):
 
 ### Retry Strategy
 - **Max Retries**: 0 (no retry)
-- **Retry Conditions**:
-  - Timeout during file read
-- **Backoff**: Exponential (5s, 10s, 20s)
 
 ### Partial Success Handling
 
@@ -363,4 +360,3 @@ FAIL 조건 (하나라도 해당):
 
 policy-definition.md를 재생성하거나, 중복 정의 제거 후 검증 재실행
 ```
-
