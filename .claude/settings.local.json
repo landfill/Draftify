@@ -12,7 +12,9 @@
       "Bash(source:*)",
       "Bash(pip install:*)",
       "Bash(cat:*)",
-      "Bash(python scripts/generate_ppt.py:*)"
+      "Bash(python scripts/generate_ppt.py:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(python:*)"
     ]
   }
 }

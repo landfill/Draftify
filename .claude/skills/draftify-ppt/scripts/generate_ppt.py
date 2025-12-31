@@ -126,7 +126,9 @@ class DraftifyPPTGenerator:
         self.screenshots_dir = self.project_dir / "screenshots"
         self.analysis_dir = self.project_dir / "analysis"
         self.sections_dir = self.project_dir / "sections"
-        self.output_path = self.project_dir / "final-draft.pptx"
+        # Output filename will be set after loading project name
+        self._output_path_base = self.project_dir
+        self.output_path = None  # Will be set in load_data()
 
         self.analyzed_data: dict[str, Any] = {}
         self.sections: dict[str, str] = {}
@@ -140,10 +142,20 @@ class DraftifyPPTGenerator:
         if structure_file.exists():
             with open(structure_file, "r", encoding="utf-8") as f:
                 self.analyzed_data = json.load(f)
-            print(f"✓ Loaded: {structure_file.name}")
+            print(f"[OK] Loaded: {structure_file.name}")
         else:
-            print(f"⚠ Warning: {structure_file} not found")
+            print(f"[WARN] Warning: {structure_file} not found")
             self.analyzed_data = {"project": {"name": "Unknown Project"}}
+
+        # Set output filename based on project name: <project-name>-draft-V0.1.pptx
+        project_name = self.analyzed_data.get("project", {}).get("name", "")
+        if not project_name or project_name == "Unknown Project":
+            # Use directory name as fallback
+            project_name = self.project_dir.name
+        # Clean project name for filename (replace spaces with hyphens)
+        clean_name = project_name.replace(" ", "-").lower()
+        version = self.analyzed_data.get("project", {}).get("version", "0.1")
+        self.output_path = self._output_path_base / f"{clean_name}-draft-V{version}.pptx"
 
         section_files = {
             "glossary": "05-glossary.md",
@@ -157,9 +169,9 @@ class DraftifyPPTGenerator:
             if filepath.exists():
                 with open(filepath, "r", encoding="utf-8") as f:
                     self.sections[key] = f.read()
-                print(f"✓ Loaded: {filename}")
+                print(f"[OK] Loaded: {filename}")
             else:
-                print(f"⚠ Warning: {filename} not found")
+                print(f"[WARN] Warning: {filename} not found")
                 self.sections[key] = ""
 
         return True
@@ -168,7 +180,7 @@ class DraftifyPPTGenerator:
         """Initialize presentation from template."""
         if self.template_path.exists():
             self.prs = Presentation(str(self.template_path))
-            print(f"✓ Using template: {self.template_path.name}")
+            print(f"[OK] Using template: {self.template_path.name}")
 
             # Cache layouts by name
             for layout in self.prs.slide_layouts:
@@ -179,16 +191,16 @@ class DraftifyPPTGenerator:
                 rId = self.prs.slides._sldIdLst[2].rId
                 self.prs.part.drop_rel(rId)
                 del self.prs.slides._sldIdLst[2]
-            print(f"✓ Kept cover and history slides from template")
+            print(f"[OK] Kept cover and history slides from template")
 
             # Remove all PowerPoint sections (slide grouping)
             self._remove_ppt_sections()
-            print(f"✓ Removed PowerPoint sections")
+            print(f"[OK] Removed PowerPoint sections")
         else:
             self.prs = Presentation()
             self.prs.slide_width = Inches(13.333)
             self.prs.slide_height = Inches(7.5)
-            print("⚠ Template not found, using blank presentation")
+            print("[WARN] Template not found, using blank presentation")
 
     def _remove_ppt_sections(self) -> None:
         """Remove all PowerPoint sections (slide grouping) from the presentation."""
@@ -390,7 +402,7 @@ class DraftifyPPTGenerator:
                         if p.runs:
                             p.runs[0].text = f"Version: {version}"
 
-        print("✓ Updated: Cover slide (template preserved)")
+        print("[OK] Updated: Cover slide (template preserved)")
 
     def add_history_slide(self) -> None:
         """Update existing history slide from template - only update table row 1."""
@@ -416,7 +428,7 @@ class DraftifyPPTGenerator:
                             self._update_cell_text(cell, new_values[ci])
                 break
 
-        print("✓ Updated: History slide (template preserved)")
+        print("[OK] Updated: History slide (template preserved)")
 
     def _update_cell_text(self, cell, new_text: str) -> None:
         """Update cell text while preserving formatting."""
@@ -522,7 +534,7 @@ class DraftifyPPTGenerator:
             # Add spacing between sections
             y += 0.15
 
-        print("✓ Added: Contents slide")
+        print("[OK] Added: Contents slide")
 
     def add_section_divider(self, section_num: str, title: str, subtitles: list = None) -> None:
         """Add section divider slide with purple bar (template style)."""
@@ -545,7 +557,7 @@ class DraftifyPPTGenerator:
                 self._add_text_box(slide, 6.30, y - 0.03, 2.95, 0.37,
                                   subtitle, font_size=16)
 
-        print(f"✓ Added: Section divider - {title}")
+        print(f"[OK] Added: Section divider - {title}")
 
     def _add_section_title_bar(self, slide, left: float, top: float,
                                 width: float, height: float,
@@ -580,88 +592,282 @@ class DraftifyPPTGenerator:
             run_title.font.bold = True
 
     def add_glossary_slides(self) -> None:
-        """Add glossary slides with proper tables."""
-        self.add_section_divider("01", "용어 정의")
+        """Add glossary slides with proper tables - all tables with pagination."""
+        # Extract section titles from markdown for divider
+        sections = self.parser.parse_sections(self.sections.get("glossary", ""))
+        section_titles = [s['title'] for s in sections if s['level'] == 2]
+        self.add_section_divider("01", "용어 정의", section_titles[:6])
 
         content = self.sections.get("glossary", "")
         if not content:
             return
 
-        tables = self.parser.parse_tables(content)
+        # Parse all tables with their section context
+        glossary_sections = [s for s in sections if s['level'] == 2]
 
-        slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
+        max_rows_per_page = 10
+        slide = None
+        y_pos = 7.0  # Force new slide on first iteration
+        page_num = 0
 
-        # Title with section number badge
-        self._add_number_badge(slide, 0.40, 0.56, "1", size=0.28,
-                              fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
-        self._add_text_box(slide, 0.75, 0.50, 4.0, 0.40,
-                          "용어 정의", font_size=18, bold=True)
+        for section in glossary_sections:
+            section_title = section['title']
+            tables = self.parser.parse_tables(section['content'])
 
-        y_pos = 1.25
-        for table_data in tables[:2]:
-            if table_data['headers'] and table_data['rows']:
-                rows_to_show = table_data['rows'][:12]
-                row_height = 0.32 * (len(rows_to_show) + 1)
-                self._create_table(
-                    slide, 0.40, y_pos, 12.80, row_height,
-                    table_data['headers'], rows_to_show
-                )
-                y_pos += row_height + 0.3
+            for table_data in tables:
+                if not table_data['headers'] or not table_data['rows']:
+                    continue
 
-        print("✓ Added: Glossary slides")
+                all_rows = table_data['rows']
+                headers = table_data['headers']
+
+                # Split rows into chunks for pagination
+                for chunk_start in range(0, len(all_rows), max_rows_per_page):
+                    chunk_rows = all_rows[chunk_start:chunk_start + max_rows_per_page]
+                    row_height = 0.32 * (len(chunk_rows) + 1)
+
+                    # Check if we need a new slide
+                    if y_pos + row_height > 6.5 or slide is None:
+                        slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
+                        page_num += 1
+
+                        # Title with section number badge
+                        self._add_number_badge(slide, 0.40, 0.56, "1", size=0.28,
+                                              fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
+                        self._add_text_box(slide, 0.75, 0.50, 10.0, 0.40,
+                                          f"용어 정의 - {section_title}", font_size=18, bold=True)
+                        y_pos = 1.25
+
+                    self._create_table(
+                        slide, 0.40, y_pos, 12.80, row_height,
+                        headers, chunk_rows
+                    )
+                    y_pos += row_height + 0.25
+
+        print(f"[OK] Added: Glossary slides ({page_num} pages)")
+
+    def _parse_policy_items(self, content: str) -> list[dict]:
+        """Parse individual policy items (### level) from content."""
+        policies = []
+        current_policy = None
+
+        for line in content.split('\n'):
+            if line.startswith('### '):
+                if current_policy:
+                    policies.append(current_policy)
+                # Extract policy ID and title
+                title = line[4:].strip()
+                policy_id_match = re.match(r'(POL-[A-Z]+-\d+)[:\s]*(.*)', title)
+                if policy_id_match:
+                    current_policy = {
+                        'id': policy_id_match.group(1),
+                        'title': policy_id_match.group(2).strip(),
+                        'content': ''
+                    }
+                else:
+                    current_policy = {
+                        'id': '',
+                        'title': title,
+                        'content': ''
+                    }
+            elif current_policy:
+                current_policy['content'] += line + '\n'
+
+        if current_policy:
+            policies.append(current_policy)
+
+        return policies
+
+    def _parse_policy_content(self, content: str) -> list[tuple[str, str]]:
+        """Parse policy content into key-value pairs."""
+        items = []
+        current_key = None
+        current_value = []
+
+        for line in content.split('\n'):
+            line = line.strip()
+            if line.startswith('- **') and '**:' in line:
+                if current_key:
+                    items.append((current_key, '\n'.join(current_value).strip()))
+                # Extract key and value
+                match = re.match(r'-\s*\*\*([^*]+)\*\*:\s*(.*)', line)
+                if match:
+                    current_key = match.group(1)
+                    current_value = [match.group(2)] if match.group(2) else []
+            elif line.startswith('  - ') and current_key:
+                current_value.append(line[4:])
+            elif line and current_key:
+                current_value.append(line)
+
+        if current_key:
+            items.append((current_key, '\n'.join(current_value).strip()))
+
+        return items
+
+    def _parse_policy_groups(self, content: str) -> list[dict]:
+        """Parse policy markdown into groups with their policies."""
+        groups = []
+        current_group = None
+        current_policy = None
+
+        for line in content.split('\n'):
+            if line.startswith('## '):
+                # Save previous group
+                if current_group:
+                    if current_policy:
+                        current_group['policies'].append(current_policy)
+                    groups.append(current_group)
+                # New group
+                current_group = {
+                    'title': line[3:].strip(),
+                    'policies': []
+                }
+                current_policy = None
+            elif line.startswith('### ') and current_group:
+                # Save previous policy
+                if current_policy:
+                    current_group['policies'].append(current_policy)
+                # New policy
+                title = line[4:].strip()
+                policy_id_match = re.match(r'(POL-[A-Z]+-\d+)[:\s]*(.*)', title)
+                if policy_id_match:
+                    current_policy = {
+                        'id': policy_id_match.group(1),
+                        'title': policy_id_match.group(2).strip(),
+                        'content': ''
+                    }
+                else:
+                    current_policy = {
+                        'id': '',
+                        'title': title,
+                        'content': ''
+                    }
+            elif current_policy:
+                current_policy['content'] += line + '\n'
+
+        # Save last items
+        if current_group:
+            if current_policy:
+                current_group['policies'].append(current_policy)
+            groups.append(current_group)
+
+        return groups
 
     def add_policy_slides(self) -> None:
-        """Add policy definition slides."""
+        """Add policy definition slides - all policies with dynamic pagination."""
         content = self.sections.get("policy", "")
-        sections = self.parser.parse_sections(content)
-        policy_groups = [s for s in sections if s['level'] == 2]
+        policy_groups = self._parse_policy_groups(content)
 
-        # Extract subtitles, removing leading numbers like "1. "
+        # Extract subtitles for section divider
         subtitles = []
         for pg in policy_groups[:6]:
             title = pg['title'].split('(')[0].strip()
-            title = re.sub(r'^[\d]+[\.\)]\s*', '', title)  # Remove leading number
+            title = re.sub(r'^[\d]+[\.\)]\s*', '', title)
             subtitles.append(title[:20])
         self.add_section_divider("02", "정책 정의", subtitles)
 
-        for idx, pg in enumerate(policy_groups[:6], 1):
-            slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
+        page_num = 0
+        slide = None
+        y_pos = 7.0  # Force new slide
 
-            # Title with number badge
-            self._add_number_badge(slide, 0.40, 0.56, str(idx), size=0.28,
-                                  fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
+        for group_idx, pg in enumerate(policy_groups, 1):
+            group_title = pg['title']
+            # Remove leading number
+            group_title_clean = re.sub(r'^[\d]+[\.\)]\s*', '', group_title)
 
-            title_text = pg['title'][:40]
-            self._add_text_box(slide, 0.75, 0.50, 10.0, 0.40,
-                              f"{idx}. {title_text}", font_size=16, bold=True)
+            # Get policies from this group
+            policies = pg['policies']
 
-            tables = self.parser.parse_tables(pg['content'])
-            y_pos = 1.25
+            for policy in policies:
+                policy_id = policy['id']
+                policy_title = policy['title']
+                policy_items = self._parse_policy_content(policy['content'])
 
-            if tables:
-                for table_data in tables[:2]:
-                    if table_data['headers'] and table_data['rows']:
-                        rows_to_show = table_data['rows'][:10]
-                        row_height = 0.30 * (len(rows_to_show) + 1)
-                        self._create_table(
-                            slide, 0.40, y_pos, 12.80, row_height,
-                            table_data['headers'], rows_to_show
-                        )
-                        y_pos += row_height + 0.2
+                # Estimate height needed for this policy
+                policy_height = 0.5 + (len(policy_items) * 0.35)
+
+                # Check if we need a new slide
+                if y_pos + policy_height > 6.2 or slide is None:
+                    slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
+                    page_num += 1
+
+                    # Group title with badge
+                    self._add_number_badge(slide, 0.40, 0.56, str(group_idx), size=0.28,
+                                          fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
+                    self._add_text_box(slide, 0.75, 0.50, 10.0, 0.40,
+                                      f"{group_idx}. {group_title_clean}", font_size=16, bold=True)
+                    y_pos = 1.20
+
+                # Policy ID and title
+                policy_header = f"{policy_id}: {policy_title}" if policy_id else policy_title
+                self._add_text_box(slide, 0.50, y_pos, 12.0, 0.35,
+                                  policy_header, font_size=12, bold=True,
+                                  font_color=COLOR_PRIMARY)
+                y_pos += 0.38
+
+                # Policy content items
+                for key, value in policy_items:
+                    # Truncate long values
+                    display_value = value[:100] + "..." if len(value) > 100 else value
+                    display_value = display_value.replace('\n', ' / ')
+                    item_text = f"• {key}: {display_value}"
+                    self._add_text_box(slide, 0.60, y_pos, 12.0, 0.30,
+                                      item_text, font_size=10)
+                    y_pos += 0.30
+
+                y_pos += 0.15  # Spacing between policies
+
+        print(f"[OK] Added: Policy slides ({page_num} pages)")
+
+    def _split_process_content(self, content: str) -> list[dict]:
+        """Split process content into subsections (### level) and code blocks."""
+        parts = []
+        current_part = {'type': 'text', 'title': '', 'content': ''}
+        in_code_block = False
+        code_block_content = []
+
+        for line in content.split('\n'):
+            if line.startswith('```'):
+                if in_code_block:
+                    # End of code block
+                    parts.append({
+                        'type': 'diagram',
+                        'title': current_part['title'],
+                        'content': '\n'.join(code_block_content)
+                    })
+                    code_block_content = []
+                    in_code_block = False
+                else:
+                    # Start of code block - save current text if any
+                    if current_part['content'].strip():
+                        parts.append(current_part)
+                    in_code_block = True
+                    code_block_content = []
+            elif in_code_block:
+                code_block_content.append(line)
+            elif line.startswith('### '):
+                if current_part['content'].strip():
+                    parts.append(current_part)
+                current_part = {
+                    'type': 'text',
+                    'title': line[4:].strip(),
+                    'content': ''
+                }
             else:
-                clean_content = self.parser.strip_markdown(pg['content'])[:1800]
-                self._add_text_box(slide, 0.40, y_pos, 12.80, 5.0,
-                                  clean_content, font_size=10)
+                current_part['content'] += line + '\n'
 
-        print("✓ Added: Policy slides")
+        if current_part['content'].strip():
+            parts.append(current_part)
+
+        return parts
 
     def add_process_slides(self) -> None:
-        """Add process flow slides."""
+        """Add process flow slides - all sections with dynamic pagination."""
         content = self.sections.get("process", "")
         sections = self.parser.parse_sections(content)
         process_sections = [s for s in sections if s['level'] == 2]
 
-        # Extract subtitles, removing leading numbers like "1. "
+        # Extract subtitles
         subtitles = []
         for ps in process_sections[:6]:
             title = ps['title'].split('(')[0].strip()
@@ -669,80 +875,385 @@ class DraftifyPPTGenerator:
             subtitles.append(title[:20])
         self.add_section_divider("03", "프로세스 흐름도", subtitles)
 
-        for idx, ps in enumerate(process_sections[:4], 1):
-            slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_PROCESS))
+        page_num = 0
 
-            # Title
+        for idx, ps in enumerate(process_sections, 1):
+            section_title = ps['title']
+            section_title_clean = re.sub(r'^[\d]+[\.\)]\s*', '', section_title)
+
+            # Parse content into parts (subsections, diagrams, tables)
+            parts = self._split_process_content(ps['content'])
+            tables = self.parser.parse_tables(ps['content'])
+
+            # Create slides for this section
+            slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_PROCESS))
+            page_num += 1
+
+            # Section title
             self._add_number_badge(slide, 0.40, 0.56, str(idx), size=0.28,
                                   fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
             self._add_text_box(slide, 0.75, 0.50, 10.0, 0.40,
-                              f"3-{idx}. {ps['title'][:35]}", font_size=16, bold=True)
+                              f"3-{idx}. {section_title_clean[:35]}", font_size=16, bold=True)
 
-            # Process content (ASCII/text flow)
-            clean_content = ps['content'][:2500]
-            self._add_text_box(slide, 0.40, 1.20, 12.80, 5.8,
-                              clean_content, font_size=9)
+            y_pos = 1.20
+            max_y = 6.5
 
-        print("✓ Added: Process flow slides")
+            # Add diagrams and text
+            for part in parts:
+                if part['type'] == 'diagram':
+                    diagram_lines = part['content'].split('\n')
+                    diagram_height = len(diagram_lines) * 0.18
+
+                    # Check if we need a new slide
+                    if y_pos + diagram_height > max_y:
+                        slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_PROCESS))
+                        page_num += 1
+                        self._add_text_box(slide, 0.40, 0.50, 10.0, 0.40,
+                                          f"3-{idx}. {section_title_clean[:35]} (계속)",
+                                          font_size=14, bold=True)
+                        y_pos = 1.10
+
+                    # Subsection title if exists
+                    if part['title']:
+                        self._add_text_box(slide, 0.50, y_pos, 10.0, 0.30,
+                                          part['title'], font_size=11, bold=True)
+                        y_pos += 0.35
+
+                    # Add diagram (use monospace styling)
+                    diagram_text = part['content'][:1500]  # Limit for very long diagrams
+                    self._add_text_box(slide, 0.50, y_pos, 12.0, diagram_height,
+                                      diagram_text, font_size=8)
+                    y_pos += diagram_height + 0.2
+
+                elif part['type'] == 'text' and part['content'].strip():
+                    text_content = part['content'].strip()[:500]
+                    text_lines = len(text_content.split('\n'))
+                    text_height = max(0.3, text_lines * 0.15)
+
+                    if y_pos + text_height > max_y:
+                        slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_PROCESS))
+                        page_num += 1
+                        self._add_text_box(slide, 0.40, 0.50, 10.0, 0.40,
+                                          f"3-{idx}. {section_title_clean[:35]} (계속)",
+                                          font_size=14, bold=True)
+                        y_pos = 1.10
+
+                    if part['title']:
+                        self._add_text_box(slide, 0.50, y_pos, 10.0, 0.30,
+                                          part['title'], font_size=11, bold=True)
+                        y_pos += 0.30
+
+                    self._add_text_box(slide, 0.50, y_pos, 12.0, text_height,
+                                      text_content, font_size=9)
+                    y_pos += text_height + 0.15
+
+            # Add tables if any
+            for table_data in tables:
+                if table_data['headers'] and table_data['rows']:
+                    rows = table_data['rows']
+                    row_height = 0.28 * (len(rows) + 1)
+
+                    if y_pos + row_height > max_y:
+                        slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_PROCESS))
+                        page_num += 1
+                        self._add_text_box(slide, 0.40, 0.50, 10.0, 0.40,
+                                          f"3-{idx}. {section_title_clean[:35]} (계속)",
+                                          font_size=14, bold=True)
+                        y_pos = 1.10
+
+                    self._create_table(slide, 0.50, y_pos, 12.0, row_height,
+                                      table_data['headers'], rows)
+                    y_pos += row_height + 0.2
+
+        print(f"[OK] Added: Process flow slides ({page_num} pages)")
+
+    def _parse_screen_from_markdown(self, content: str) -> dict:
+        """Parse a single screen section from markdown into structured data."""
+        result = {
+            'basic_info': [],
+            'ui_elements': {'headers': [], 'rows': []},
+            'functions': {'headers': [], 'rows': []},
+            'related_policies': []
+        }
+
+        current_section = None
+
+        for line in content.split('\n'):
+            line_stripped = line.strip()
+
+            # Detect section headers
+            if line.startswith('### '):
+                section_name = line[4:].strip().lower()
+                if '기본' in section_name:
+                    current_section = 'basic_info'
+                elif 'ui' in section_name or '구성' in section_name:
+                    current_section = 'ui_elements'
+                elif '기능' in section_name:
+                    current_section = 'functions'
+                elif '정책' in section_name:
+                    current_section = 'policies'
+                else:
+                    current_section = None
+                continue
+
+            # Parse basic info (bullet points)
+            if current_section == 'basic_info' and line_stripped.startswith('- **'):
+                match = re.match(r'-\s*\*\*([^*]+)\*\*:\s*(.*)', line_stripped)
+                if match:
+                    result['basic_info'].append((match.group(1), match.group(2)))
+
+            # Parse related policies
+            if current_section == 'policies' and line_stripped.startswith('- POL-'):
+                result['related_policies'].append(line_stripped[2:])
+
+        # Parse tables from content
+        tables = self.parser.parse_tables(content)
+        for table in tables:
+            if not table['headers']:
+                continue
+            headers_lower = [h.lower() for h in table['headers']]
+            # UI elements table
+            if any('요소' in h or 'id' in h.lower() for h in table['headers']):
+                if not result['ui_elements']['headers']:
+                    result['ui_elements'] = table
+            # Functions table
+            elif any('기능' in h or '액션' in h or '사용자' in h for h in table['headers']):
+                if not result['functions']['headers']:
+                    result['functions'] = table
+
+        return result
+
+    def _create_screen_description_table(self, slide, left: float, top: float, width: float,
+                                          screen_data: dict, screen_id: str, screen_name: str) -> float:
+        """Create description table for screen slide (template style).
+        All content from markdown included. Font size fixed at 8pt.
+        Returns the y position after the table."""
+        # Build description rows from all sections
+        rows_data = []
+
+        # Section 1: 기본 정보
+        rows_data.append(("기본", ""))  # Section header
+        for key, value in screen_data['basic_info']:
+            # Clean up value (remove backticks, limit length)
+            clean_value = value.replace('`', '').strip()
+            display_value = clean_value[:50] + "..." if len(clean_value) > 50 else clean_value
+            rows_data.append(("", f"{key}: {display_value}"))
+
+        # Section 2: UI 구성 요소
+        ui_table = screen_data['ui_elements']
+        if ui_table.get('rows'):
+            rows_data.append(("UI", ""))  # Section header
+            for row in ui_table['rows']:
+                if len(row) >= 3:
+                    # Format: ID | 유형 | 설명
+                    element_text = f"{row[0]} ({row[1]}): {row[2][:30]}"
+                    rows_data.append(("", element_text))
+
+        # Section 3: 기능 정의
+        func_table = screen_data['functions']
+        if func_table.get('rows'):
+            rows_data.append(("기능", ""))  # Section header
+            for row in func_table['rows']:
+                if len(row) >= 2:
+                    # Format: 기능명 | 액션
+                    func_text = f"{row[0]}: {row[1][:30]}"
+                    if len(row) >= 4 and row[3]:
+                        func_text += f" -> {row[3]}"
+                    rows_data.append(("", func_text))
+
+        # Section 4: 관련 정책
+        if screen_data['related_policies']:
+            rows_data.append(("정책", ""))  # Section header
+            for policy in screen_data['related_policies']:
+                rows_data.append(("", policy))
+
+        # Calculate dynamic row height based on content
+        # More rows = smaller row height to fit
+        total_rows = len(rows_data)
+        available_height = 6.8  # Available height in the description area
+        row_height_each = min(0.35, available_height / max(total_rows, 1))
+
+        # Create the table
+        table_height = row_height_each * total_rows
+        table = slide.shapes.add_table(
+            total_rows, 2,
+            Inches(left), Inches(top), Inches(width), Inches(table_height)
+        ).table
+
+        # Set column widths (narrow first col for section labels)
+        table.columns[0].width = Inches(0.35)
+        table.columns[1].width = Inches(width - 0.35)
+
+        # Fill table data with font size 8pt fixed
+        for ri, (label, desc) in enumerate(rows_data):
+            # Label cell (section header or empty)
+            cell0 = table.cell(ri, 0)
+            cell0.text = label
+            if label:  # Section header row
+                cell0.fill.solid()
+                cell0.fill.fore_color.rgb = RGBColor(0xE8, 0xE8, 0xE8)
+            else:
+                cell0.fill.background()
+            for para in cell0.text_frame.paragraphs:
+                para.alignment = PP_ALIGN.CENTER
+                for run in para.runs:
+                    run.font.size = Pt(8)
+                    run.font.bold = True if label else False
+                    run.font.color.rgb = COLOR_BLACK
+
+            # Description cell
+            cell1 = table.cell(ri, 1)
+            cell1.text = desc
+            if label:  # Section header row
+                cell1.fill.solid()
+                cell1.fill.fore_color.rgb = RGBColor(0xE8, 0xE8, 0xE8)
+            else:
+                cell1.fill.background()
+            for para in cell1.text_frame.paragraphs:
+                for run in para.runs:
+                    run.font.size = Pt(8)
+                    run.font.bold = True if label else False
+                    run.font.color.rgb = COLOR_BLACK
+
+        # Apply dark gray thin borders to all cells
+        # Border width: 0.5pt = 6350 EMU, Color: dark gray #666666
+        for ri in range(total_rows):
+            for ci in range(2):
+                cell = table.cell(ri, ci)
+                self._set_cell_border_all(cell, 6350, "666666")
+
+        return top + table_height
+
+    def _set_cell_border_all(self, cell, width_emu: int, color_hex: str) -> None:
+        """Set all borders for a cell (dark gray thin line)."""
+        from lxml import etree
+
+        tc = cell._tc
+        tcPr = tc.find(qn('a:tcPr'))
+        if tcPr is None:
+            tcPr = etree.SubElement(tc, qn('a:tcPr'))
+
+        for border_name in ['lnL', 'lnR', 'lnT', 'lnB']:
+            # Remove existing border
+            border = tcPr.find(qn(f'a:{border_name}'))
+            if border is not None:
+                tcPr.remove(border)
+
+            # Create new border
+            border = etree.SubElement(tcPr, qn(f'a:{border_name}'))
+            border.set('w', str(width_emu))
+            border.set('cap', 'flat')
+            border.set('cmpd', 'sng')
+            border.set('algn', 'ctr')
+
+            # Solid fill with color
+            solidFill = etree.SubElement(border, qn('a:solidFill'))
+            srgbClr = etree.SubElement(solidFill, qn('a:srgbClr'))
+            srgbClr.set('val', color_hex)
+
+            # Solid dash
+            prstDash = etree.SubElement(border, qn('a:prstDash'))
+            prstDash.set('val', 'solid')
+
+    def _extract_screen_sections_raw(self, content: str) -> list[dict]:
+        """Extract screen sections with full content including ### subsections."""
+        screens = []
+        current_screen = None
+
+        for line in content.split('\n'):
+            # Match ## SCR-XXX: Name
+            if line.startswith('## ') and 'SCR-' in line:
+                # Save previous screen
+                if current_screen:
+                    screens.append(current_screen)
+                # Start new screen
+                match = re.search(r'(SCR-\d{3})[:\s]*(.*)', line[3:])
+                if match:
+                    current_screen = {
+                        'id': match.group(1),
+                        'name': match.group(2).strip(),
+                        'content': ''
+                    }
+                else:
+                    current_screen = None
+            elif line.startswith('## ') and current_screen:
+                # Another ## section (not SCR-), save current and stop
+                screens.append(current_screen)
+                current_screen = None
+            elif current_screen:
+                current_screen['content'] += line + '\n'
+
+        # Save last screen
+        if current_screen:
+            screens.append(current_screen)
+
+        return screens
 
     def add_screen_slides(self) -> None:
-        """Add screen definition slides matching template layout."""
-        screens = self.analyzed_data.get("screens", [])
+        """Add screen definition slides with description in right 25% area (template style)."""
+        screen_content = self.sections.get("screen", "")
 
-        subtitles = [f"{s.get('id')}: {s.get('name')[:15]}" for s in screens[:6]]
+        # Extract screen sections with full content (including ### subsections)
+        screen_sections_raw = self._extract_screen_sections_raw(screen_content)
+
+        # Extract screen IDs and names for divider
+        subtitles = []
+        for s in screen_sections_raw[:6]:
+            subtitles.append(f"{s['id']}: {s['name'][:12]}")
         self.add_section_divider("04", "화면상세", subtitles)
 
-        # Screen list summary slide
-        if screens:
-            slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
-            self._add_number_badge(slide, 0.40, 0.56, "4", size=0.28,
-                                  fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
-            self._add_text_box(slide, 0.75, 0.50, 4.0, 0.40,
-                              "화면 목록", font_size=18, bold=True)
+        # Screen list summary slide from markdown table (find "화면 목록 요약" section)
+        summary_match = re.search(r'##\s*화면\s*목록[^\n]*\n(.*?)(?=\n##\s|$)', screen_content, re.DOTALL)
+        if summary_match:
+            tables = self.parser.parse_tables(summary_match.group(1))
+            if tables and tables[0]['rows']:
+                slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
+                self._add_number_badge(slide, 0.40, 0.56, "4", size=0.28,
+                                      fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
+                self._add_text_box(slide, 0.75, 0.50, 4.0, 0.40,
+                                  "화면 목록", font_size=18, bold=True)
+                table_data = tables[0]
+                row_count = min(len(table_data['rows']), 15)
+                self._create_table(slide, 0.40, 1.25, 12.80, 0.32 * (row_count + 1),
+                                  table_data['headers'], table_data['rows'][:row_count])
 
-            headers = ["화면 ID", "화면명", "목적", "URL"]
-            rows = [[
-                s.get("id", ""),
-                s.get("name", ""),
-                s.get("purpose", "")[:25],
-                s.get("url", "")
-            ] for s in screens[:12]]
+        page_num = 0
 
-            self._create_table(slide, 0.40, 1.25, 12.80, 0.35 * (len(rows) + 1),
-                              headers, rows)
+        # Template layout: right 25% for description
+        # Slide width: 13.333 inches, Description area: ~3.3 inches
+        desc_left = 10.0   # Start of description area
+        desc_width = 3.2   # Width of description area
+        screenshot_width = 9.3  # Left area for screenshot (75%)
 
         # Individual screen slides
-        screen_content = self.sections.get("screen", "")
-        screen_sections = self._parse_screen_sections(screen_content)
+        for idx, screen_section in enumerate(screen_sections_raw, 1):
+            screen_id = screen_section['id']
+            screen_name = screen_section['name']
 
-        for idx, screen in enumerate(screens, 1):
-            screen_id = screen.get("id", "")
-            screen_name = screen.get("name", "")
+            # Parse screen content (includes ### subsections)
+            screen_data = self._parse_screen_from_markdown(screen_section['content'])
 
+            # === Main Slide: Screenshot + Description ===
             slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_SCREEN))
+            page_num += 1
 
-            # Section title at top
-            self._add_text_box(slide, 0.0, 0.10, 11.50, 0.40,
-                              "4. 화면상세", font_size=14, bold=True)
+            # Section title at top left
+            self._add_text_box(slide, 0.40, 0.10, 9.0, 0.35,
+                              "4. 화면상세", font_size=12, bold=True)
 
             # Screen name with badge
-            self._add_number_badge(slide, 0.40, 0.56, str(idx), size=0.28,
+            self._add_number_badge(slide, 0.40, 0.50, str(idx), size=0.28,
                                   fill_color=COLOR_PRIMARY, font_color=COLOR_WHITE)
-            self._add_text_box(slide, 0.75, 0.50, 8.0, 0.40,
-                              f"{screen_id}: {screen_name}", font_size=14, bold=True)
+            self._add_text_box(slide, 0.75, 0.45, 8.0, 0.35,
+                              f"{screen_id}: {screen_name}", font_size=13, bold=True)
 
-            # Layout: Left ~24cm for images, Right ~7.8cm for description
-            # Template: Description at x=25.8cm (10.16in), width=7.8cm (3.07in)
-            desc_left = 10.2   # 25.9cm / 2.54
-            desc_width = 3.07  # 7.8cm / 2.54
-
-            # "Description" header bar (template style - light gray RGB(240,240,240), 9pt, not bold)
+            # "Description" header bar (template style - light gray)
             desc_header = slide.shapes.add_shape(
                 MSO_SHAPE.RECTANGLE,
-                Inches(desc_left), Inches(0.15), Inches(desc_width), Inches(0.28)
+                Inches(desc_left), Inches(0.10), Inches(desc_width), Inches(0.28)
             )
             desc_header.fill.solid()
-            desc_header.fill.fore_color.rgb = RGBColor(0xF0, 0xF0, 0xF0)  # RGB(240,240,240)
+            desc_header.fill.fore_color.rgb = RGBColor(0xF0, 0xF0, 0xF0)
             desc_header.line.fill.background()
             if desc_header.has_text_frame:
                 tf = desc_header.text_frame
@@ -750,110 +1261,31 @@ class DraftifyPPTGenerator:
                 p.alignment = PP_ALIGN.CENTER
                 run = p.add_run()
                 run.text = "Description"
-                run.font.size = Pt(9)  # Template: 9pt
-                run.font.color.rgb = COLOR_BLACK  # Black text on light gray
-                run.font.bold = False  # Template: not bold
+                run.font.size = Pt(9)
+                run.font.color.rgb = COLOR_BLACK
+                run.font.bold = False
 
-            # Screenshot on left side (within ~24cm area)
+            # Screenshot on left side (75% area)
             screenshot_path = self.screenshots_dir / f"{screen_id}.png"
             if screenshot_path.exists():
                 try:
+                    # Calculate appropriate size within left area
                     slide.shapes.add_picture(
                         str(screenshot_path),
-                        Inches(0.7), Inches(1.6),
-                        width=Inches(4.5)
+                        Inches(0.4), Inches(1.0),
+                        width=Inches(min(screenshot_width - 0.8, 8.5))
                     )
                 except Exception as e:
-                    print(f"  ⚠ Screenshot error for {screen_id}: {e}")
+                    print(f"  [WARN] Screenshot error for {screen_id}: {e}")
 
-            # Description table (template style: 2 cols - number | description)
-            # Template has narrow first column for numbers
-            self._create_description_table(
-                slide, desc_left, 0.45, desc_width,
-                screen_id, screen_name, screen, screen_sections
+            # Description table on right side (25% area)
+            # All content (basic info, UI elements, functions, policies) included in this table
+            self._create_screen_description_table(
+                slide, desc_left, 0.42, desc_width,
+                screen_data, screen_id, screen_name
             )
 
-        print("✓ Added: Screen definition slides")
-
-    def _parse_screen_sections(self, content: str) -> dict[str, str]:
-        """Parse screen sections from markdown."""
-        sections = {}
-        pattern = r"##\s*(?:화면\s*(?:정의)?:?\s*)?(SCR-\d{3})[^\n]*\n(.*?)(?=##\s*(?:화면|SCR-)|$)"
-        matches = re.findall(pattern, content, re.DOTALL | re.IGNORECASE)
-        for match in matches:
-            sections[match[0]] = match[1].strip()
-        return sections
-
-    def _create_description_table(self, slide, left: float, top: float, width: float,
-                                   screen_id: str, screen_name: str, screen: dict,
-                                   screen_sections: dict) -> None:
-        """Create description table in template style (number | description format)."""
-        # Template style: 2 columns - narrow number col, wide description col
-        # Row 0: Reference links
-        # Row 1+: Numbered descriptions
-
-        # Build description content
-        purpose = screen.get("purpose", "-")
-        url = screen.get("url", "-")
-        process_step = screen.get("processStep", "-")
-
-        # Get additional content from markdown
-        extra_content = ""
-        if screen_id in screen_sections:
-            extra_content = self.parser.strip_markdown(screen_sections[screen_id][:300])
-
-        # Create table with template structure
-        rows_data = [
-            ("📑참고", f"화면 ID: {screen_id}\n화면명: {screen_name}"),
-            ("1", f"목적: {purpose}\nURL: {url}"),
-            ("2", f"프로세스 단계: {process_step}"),
-        ]
-
-        if extra_content:
-            rows_data.append(("3", extra_content[:150]))
-
-        # Create the table
-        table_height = 0.6 * len(rows_data)
-        table = slide.shapes.add_table(
-            len(rows_data), 2,
-            Inches(left), Inches(top), Inches(width), Inches(table_height)
-        ).table
-
-        # Set column widths (narrow first col for numbers)
-        table.columns[0].width = Inches(0.35)
-        table.columns[1].width = Inches(width - 0.35)
-
-        # Fill table data with proper text colors
-        for ri, (num, desc) in enumerate(rows_data):
-            # Number cell
-            cell0 = table.cell(ri, 0)
-            cell0.text = num
-            for para in cell0.text_frame.paragraphs:
-                para.alignment = PP_ALIGN.CENTER
-                for run in para.runs:
-                    run.font.size = Pt(9)
-                    run.font.bold = True
-                    run.font.color.rgb = COLOR_BLACK  # Ensure black text
-
-            # Description cell
-            cell1 = table.cell(ri, 1)
-            cell1.text = desc
-            for para in cell1.text_frame.paragraphs:
-                for run in para.runs:
-                    run.font.size = Pt(8)
-                    run.font.color.rgb = COLOR_BLACK  # Ensure black text
-
-        # Style table (template: transparent fill, borders only top/bottom/inside at 1/4pt)
-        num_rows = len(rows_data)
-        for ri in range(num_rows):
-            for ci in range(2):
-                cell = table.cell(ri, ci)
-                # Transparent fill
-                cell.fill.background()
-
-                # Borders: top, bottom, inside only (no left/right outer edges)
-                # 1/4pt = 3175 EMU
-                self._set_cell_borders_selective(cell, 3175, "808080", ri, ci, num_rows, 2)
+        print(f"[OK] Added: Screen definition slides ({page_num} pages)")
 
     def _set_cell_borders_selective(self, cell, width_emu: int, color_hex: str,
                                       row: int, col: int, total_rows: int, total_cols: int) -> None:
@@ -947,7 +1379,7 @@ class DraftifyPPTGenerator:
 
         self._add_text_box(slide, 0.51, 1.5, 12.42, 4.0, ref_text, font_size=12)
 
-        print("✓ Added: Reference slide")
+        print("[OK] Added: Reference slide")
 
     def add_eod_slide(self) -> None:
         """Add end of document slide."""
@@ -959,7 +1391,7 @@ class DraftifyPPTGenerator:
                           font_size=28, bold=True, font_color=COLOR_GRAY,
                           align=PP_ALIGN.CENTER)
 
-        print("✓ Added: EOD slide")
+        print("[OK] Added: EOD slide")
 
     def generate(self) -> Path:
         """Generate the complete PPT document."""
@@ -988,7 +1420,7 @@ class DraftifyPPTGenerator:
         self.prs.save(str(self.output_path))
 
         print(f"\n{'='*50}")
-        print(f"✓ SUCCESS: Generated {self.output_path}")
+        print(f"[OK] SUCCESS: Generated {self.output_path}")
         print(f"  Total slides: {len(self.prs.slides)}")
         print(f"{'='*50}\n")
 
