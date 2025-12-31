@@ -4,6 +4,7 @@
 **최종 갱신**: 2025-12-29
 
 > **Note**: 이 문서는 Phase 1-4 워크플로우의 완전한 명세입니다.
+> Phase 1-3.5는 orchestrator 에이전트가 담당하고, Phase 4는 /auto-draft 스킬 계층에서 실행됩니다.
 
 ---
 
@@ -90,9 +91,15 @@
   │
   ▼
 ┌─────────────────────────────────────┐
-│ Phase 4: PPT 생성                    │
+│ ← orchestrator 반환 → /auto-draft   │
+│   (스킬 계층으로 제어권 반환)        │
+└─────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────┐
+│ Phase 4: PPT 생성 (/auto-draft 스킬) │
 │                                     │
-│ /ppt-generator 스킬 호출             │
+│ /draftify-ppt 스킬 호출              │
 │ • 섹션 마크다운 파싱                 │
 │ • 회사 템플릿 적용                   │
 │ • 스크린샷 임베딩                    │
@@ -115,7 +122,7 @@
 | **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 **병렬** 실행 | 06-policy-definition.md, 05-glossary.md |
 | **3-2. 후행 생성** | analyzed-structure.json, 06-policy-definition.md, 08-screen-definition.md | 2개 에이전트 순차 실행 (screen → process) | 08-screen-definition.md, 07-process-flow.md |
 | **3.5. 검증** | 모든 섹션.md, guideline | validator 에이전트 | validation-report.md (PASS/FAIL) |
-| **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (ppt-generator) | final-draft.pptx 또는 HTML |
+| **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (draftify-ppt) | final-draft.pptx 또는 HTML |
 
 ---
 
@@ -157,7 +164,7 @@ URL ────┐
                             │
                             │ 검증 통과
                             ▼
-                    [ppt-generator]
+                    [draftify-ppt]
                             │
                             ▼
                     final-draft.pptx
@@ -221,13 +228,18 @@ URL ────┐
 - **목표**: 생성된 섹션들의 ID 참조 무결성 검증
 - **에이전트**: quality-validator (단일)
 - **출력**: `validation-report.md` (PASS/FAIL)
+- **완료 후**: orchestrator 반환 → /auto-draft 스킬 계층
 - **실패(FAIL) 시**: Phase 4 계속 진행 (경고 포함)
 
-### Phase 4: PPT 생성
+### Phase 4: PPT 생성 (/auto-draft 스킬 계층)
 - **목표**: 마크다운 → PPT 변환
-- **스킬**: ppt-generator (별도 독립 스킬)
+- **실행 주체**: /auto-draft 스킬 (orchestrator 아님)
+- **호출 스킬**: /draftify-ppt
 - **출력**: `final-draft.pptx`
 - **실패 시**: HTML 대체 버전 생성
+
+> **Note**: Phase 4는 orchestrator가 아닌 /auto-draft 스킬 계층에서 실행됩니다.
+> 이는 서브 에이전트가 스킬을 직접 호출할 수 없는 Claude Code 제약 때문입니다.
 
 ---
 
@@ -235,11 +247,24 @@ URL ────┐
 
 **전체 워크플로우 순차 실행**:
 ```
-Phase 1 → Phase 2 → Phase 3-1 → Phase 3-2 → Phase 3.5 → Phase 4
-                        ↓           ↓
-                    06-policy-definition.md   08-screen-definition.md
-                    05-glossary.md                 ↓
-                                              07-process-flow.md
+┌─────────────── orchestrator 영역 ───────────────┐
+│                                                  │
+│ Phase 1 → Phase 2 → Phase 3-1 → Phase 3-2 → Phase 3.5
+│                         ↓           ↓            │
+│                 06-policy-definition.md          │
+│                 05-glossary.md                   │
+│                               08-screen-definition.md
+│                                     ↓            │
+│                               07-process-flow.md │
+│                                                  │
+└──────────────────────┬───────────────────────────┘
+                       │ 결과 반환
+                       ▼
+┌─────────────── /auto-draft 스킬 영역 ────────────┐
+│                                                  │
+│ Phase 4: /draftify-ppt 호출 → final-draft.pptx  │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
 **Phase 3-2 내부 순서**:

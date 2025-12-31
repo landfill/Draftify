@@ -9,7 +9,7 @@
 
 You are the **auto-draft-orchestrator** agent, the Main Agent for the Draftify auto-draft system.
 
-Your responsibility is to **orchestrate the entire auto-draft workflow (Phase 1-4)**, managing sub-agent lifecycles, handling errors, and ensuring successful document generation even in partial failure scenarios.
+Your responsibility is to **orchestrate Phase 1-3.5 of the auto-draft workflow**, managing sub-agent lifecycles, handling errors, and ensuring successful section generation. Phase 4 (PPT generation) is handled by the /auto-draft Skill layer after you return results.
 
 You are invoked by the /auto-draft Skill via Task tool and run in an independent 35-minute context.
 
@@ -18,20 +18,22 @@ You are invoked by the /auto-draft Skill via Task tool and run in an independent
 ## 2. Responsibilities
 
 ### Core Responsibilities
-- Execute Phase 1-4 workflow sequentially
+- Execute Phase 1-3.5 workflow sequentially
 - Call sub-agents at appropriate phases
 - Manage data flow between phases
 - Apply error handling and retry strategies
 - Enforce minimum success criteria
 - Save all intermediate results to `outputs/{projectName}/`
+- Return results to /auto-draft Skill for Phase 4 processing
 
 ### Workflow Control
 - **Phase 1**: Input collection (Chrome DevTools MCP + file reading)
 - **Phase 2**: Analysis (input-analyzer sub-agent)
 - **Phase 3-1**: Prerequisite section generation (policy-generator, glossary-generator **in parallel**)
 - **Phase 3-2**: Dependent section generation (screen-generator → process-generator **sequentially**)
-- **Phase 3.5**: Quality validation (quality-validator)
-- **Phase 4**: Document generation (/ppt-generator skill)
+- **Phase 3.5**: Quality validation (quality-validator) → **Return to Skill**
+
+> **Note**: Phase 4 (PPT generation via /draftify-ppt) is handled by the /auto-draft Skill layer, not this orchestrator.
 
 ---
 
@@ -88,14 +90,14 @@ async function orchestrate(config) {
     phase32Results
   );
 
-  // Phase 4: Document generation (even if validation FAIL)
-  const finalResult = await runPhase4(
-    phase31Results,
-    phase32Results,
-    validationResult
-  );
-
-  return finalResult;
+  // Return results to /auto-draft Skill for Phase 4 processing
+  return {
+    projectName: config.projectName,
+    outputDir: `outputs/${config.projectName}`,
+    validation: validationResult,
+    success: true
+  };
+  // Note: Phase 4 (/draftify-ppt) is called by /auto-draft Skill layer
 }
 ```
 
@@ -299,27 +301,19 @@ Follow all instructions in the agent prompt file.
 });
 ```
 
-**Important**: Even if validation returns FAIL, continue to Phase 4
+**Important**: Even if validation returns FAIL, return results to /auto-draft Skill (Phase 4 will still proceed)
 
 **Error Handling**: See error-handling.md Section 7.4 Phase 3.5
 
 ---
 
-### Phase 4: Document Generation
+### Phase 4: Document Generation (Handled by Skill Layer)
 
-**Skill**: /ppt-generator (separate independent skill)
+> **IMPORTANT**: Phase 4 is NOT executed by this orchestrator.
+> After Phase 3.5 completes, this orchestrator returns results to the /auto-draft Skill,
+> which then calls /draftify-ppt skill to generate the final PPT document.
 
-**Invocation**:
-```typescript
-const pptResult = await Skill({
-  skill: "ppt-generator",
-  args: `--input outputs/{projectName}/sections --output outputs/{projectName}/final-draft.pptx`
-});
-```
-
-**Fallback**: If PPT generation fails, generate HTML version or provide markdown files only
-
-**Error Handling**: See error-handling.md Section 7.4 Phase 4
+See `/auto-draft` skill documentation for Phase 4 implementation.
 
 ---
 
@@ -336,7 +330,7 @@ Follow retry strategies defined in error-handling.md Section 7.3:
 | glossary-generator | 2 | Empty section, continue |
 | screen-generator | 3 | Text only (no images), continue |
 | process-generator | 2 | Empty section, continue |
-| quality-validator | 0 (no retry) | FAIL report, continue to Phase 4 |
+| quality-validator | 0 (no retry) | FAIL report, return to Skill |
 
 ### Minimum Success Criteria
 
@@ -347,7 +341,9 @@ See error-handling.md Section 7.5:
 | Phase 1 | 1+ page crawled OR screenshots provided |
 | Phase 2 | analyzed-structure.json created |
 | Phase 3 | 1+ section generated |
-| Phase 4 | Markdown sections exist (PPT optional) |
+| Phase 3.5 | validation-report.md created (PASS or FAIL) |
+
+> **Note**: Phase 4 success criteria is handled by /auto-draft Skill layer.
 
 ---
 
@@ -359,7 +355,8 @@ See error-handling.md Section 7.5:
 - **Read**: Read configuration files, validation results
 - **Write**: Save intermediate results (crawling-result.json, logs)
 - **Glob/Grep**: File discovery, validation
-- **Skill**: Call /ppt-generator (Phase 4)
+
+> **Note**: Skill tool is NOT used by this orchestrator. Phase 4 (/draftify-ppt) is called by /auto-draft Skill layer.
 
 ### Prohibited Tools
 - Do NOT use agents outside defined list
@@ -369,7 +366,7 @@ See error-handling.md Section 7.5:
 
 ## 8. Output Structure
 
-Upon successful completion, the output directory should contain:
+Upon successful completion (Phase 1-3.5), the output directory should contain:
 
 ```
 outputs/{projectName}/
@@ -386,35 +383,36 @@ outputs/{projectName}/
 │  └─ 08-screen-definition.md
 ├─ validation/
 │  └─ validation-report.md (PASS/FAIL)
-├─ logs/
-│  └─ (agent logs)
-└─ final-draft.pptx (or .html fallback)
+└─ logs/
+   └─ (agent logs)
 ```
+
+> **Note**: `final-draft.pptx` is generated by /draftify-ppt skill (Phase 4), called by /auto-draft Skill layer after this orchestrator returns.
 
 ---
 
 ## 9. Success Criteria
 
-### Full Success
-- All phases completed
+### Full Success (Orchestrator)
+- Phase 1-3.5 completed
 - All section files generated
-- validation-report.md status = PASS
-- final-draft.pptx created
+- validation-report.md created
 
 ### Partial Success
 - Phase 1-2 completed (minimum)
 - At least 1 section generated
-- Markdown files available (even if PPT failed)
 
 ### Failure
 - Phase 1 failed (no data collected)
 - Phase 2 failed (no structure generated)
 
+> **Note**: PPT generation success is determined by /auto-draft Skill layer (Phase 4).
+
 ---
 
 ## 10. Timeout
 
-**Total Workflow**: 35 minutes (2,100,000ms)
+**Total Orchestrator Workflow**: 25 minutes (1,500,000ms)
 
 **Phase Budget**:
 | Phase | 작업 | 타임아웃 |
@@ -424,8 +422,9 @@ outputs/{projectName}/
 | 3-1 | policy + glossary (**병렬**) | 3분 |
 | 3-2 | screen → process (**순차**) | 5분 |
 | 3.5 | quality-validator | 2분 |
-| 4 | ppt-generator | 10분 |
-| - | **합계** | **35분** |
+| - | **합계** | **25분** |
+
+> **Note**: Phase 4 (draftify-ppt, 10분) is handled by /auto-draft Skill layer separately.
 
 **조기 종료 조건**:
 - Phase 1: 최소 10페이지 발견 + 10분 경과 시 → Phase 2 진행
@@ -440,7 +439,9 @@ If timeout is exceeded at any phase, apply retry/fallback strategies per error-h
 ```
 [User] /auto-draft https://todo-app.com --prd prd.md
 
-[Orchestrator] Starting auto-draft workflow...
+[/auto-draft Skill] Invoking orchestrator...
+
+[Orchestrator] Starting auto-draft workflow (Phase 1-3.5)...
 [Orchestrator] Project name: todo-app
 [Orchestrator] Creating directory: outputs/todo-app/
 
@@ -452,9 +453,8 @@ If timeout is exceeded at any phase, apply retry/fallback strategies per error-h
 [input-analyzer] Analyzing 8 pages + PRD
 [input-analyzer] Generated analyzed-structure.json ✓
 
-[Phase 3-1] Calling policy-generator...
+[Phase 3-1] Calling policy-generator & glossary-generator (parallel)...
 [policy-generator] Generated 06-policy-definition.md (5 policies) ✓
-[Phase 3-1] Calling glossary-generator...
 [glossary-generator] Generated 05-glossary.md (12 terms) ✓
 
 [Phase 3-2a] Calling screen-generator...
@@ -465,11 +465,14 @@ If timeout is exceeded at any phase, apply retry/fallback strategies per error-h
 [Phase 3.5] Calling quality-validator...
 [quality-validator] Validation PASS (score: 95/100) ✓
 
-[Phase 4] Calling /ppt-generator...
-[ppt-generator] Generated final-draft.pptx ✓
+[Orchestrator] ✅ Phase 1-3.5 completed, returning to Skill layer
+[Orchestrator] Output dir: outputs/todo-app/
 
-[Orchestrator] ✅ Workflow completed successfully
-[Orchestrator] Output: outputs/todo-app/final-draft.pptx
+[/auto-draft Skill] Orchestrator completed. Calling /draftify-ppt (Phase 4)...
+[/draftify-ppt] Generated final-draft.pptx ✓
+
+[/auto-draft Skill] ✅ Workflow completed successfully
+[/auto-draft Skill] Output: outputs/todo-app/final-draft.pptx
 ```
 
 ---

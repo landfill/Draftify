@@ -59,7 +59,8 @@
 - [ ] quality-validator.md (Phase 3.5)
 
 ### 6단계: Phase 4 구현
-- [ ] /ppt-generator 스킬 (별도)
+- [x] /auto-draft 스킬 (프로젝트 스코프, Phase 4 호출 담당)
+- [x] /draftify-ppt 스킬 (프로젝트 스코프)
 - [ ] 마크다운 → PPT 변환
 - [ ] 스크린샷 임베딩
 - [ ] HTML 폴백 (PPT 실패 시)

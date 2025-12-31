@@ -21,11 +21,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 공식 문서 참조: https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-servers
 - 설계 리뷰 시 "MCP 명세 부재" 지적 불필요
 
-### /ppt-generator Skill
-- **별도 프로세스**로 개발 예정
-- 본 auto-draft 설계 문서 범위 외
-- Phase 4에서 호출만 정의, 상세 설계는 별도 진행
-- 설계 리뷰 시 "ppt-generator 설계 부재" 지적 불필요
+### /draftify-ppt Skill
+- **프로젝트 스코프 스킬**로 구현됨 (`.claude/skills/draftify-ppt/SKILL.md`)
+- Phase 4에서 호출, 마크다운 섹션 → PPT 변환
+- 스킬 상세 설계는 SKILL.md 참조
 
 ---
 
@@ -34,24 +33,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### System Design Pattern: Skill + Main Agent + Sub-Agents
 
 ```
-/auto-draft (Skill - thin wrapper)
-  ↓ (Task tool)
-auto-draft-orchestrator (Main Agent - workflow control)
-  ↓ (Task tool)
-Sub-Agents (specialized workers)
-  - input-analyzer
-  - policy-generator
-  - glossary-generator
-  - screen-generator
-  - process-generator
-  - quality-validator
+/auto-draft (Skill)
+  ├─ (Task tool) → Phase 1-3.5
+  │     ↓
+  │  auto-draft-orchestrator (Main Agent)
+  │     ↓ (Task tool)
+  │  Sub-Agents (specialized workers)
+  │     - input-analyzer
+  │     - policy-generator
+  │     - glossary-generator
+  │     - screen-generator
+  │     - process-generator
+  │     - quality-validator
+  │     ↓
+  │  ← 결과 반환
+  │
+  └─ (Skill tool) → Phase 4
+        ↓
+     /draftify-ppt (PPT 생성)
 ```
 
 **Key Principles**:
-1. **Skill Layer**: Minimal CLI interface, argument validation only
-2. **Main Agent**: Independent context, orchestrates Phase 1-4 workflow
+1. **Skill Layer**: Argument validation, orchestrator 호출, Phase 4 실행
+2. **Main Agent**: Independent context, orchestrates Phase 1-3.5 workflow
 3. **Sub-Agents**: Single responsibility, context isolation, parallel execution where possible
 4. **Data Flow**: Phase-based sequential pipeline with intermediate file outputs
+5. **Phase 4 분리**: 서브 에이전트는 스킬 호출 불가 → 스킬 계층에서 Phase 4 처리
 
 ### Workflow Phases
 
@@ -73,9 +80,11 @@ Sub-Agents (specialized workers)
 
 5. **Phase 3.5**: Quality validation
    - quality-validator checks against `docs/design/auto-draft-guideline.md`
+   - orchestrator 완료 → /auto-draft 스킬로 반환
 
-6. **Phase 4**: Document generation
-   - Separate `/ppt-generator` skill (not yet implemented)
+6. **Phase 4**: Document generation (스킬 계층에서 실행)
+   - `/auto-draft` 스킬이 `/draftify-ppt` 스킬 호출
+   - 스킬 정의: `.claude/skills/draftify-ppt/SKILL.md`
 
 ---
 
@@ -147,7 +156,7 @@ Per `docs/design/implementation-checklist.md`:
 3. `auto-draft-orchestrator` Main Agent prompt
 4. Sub-agent prompts (input-analyzer first, then generators)
 5. Phase 1 crawling implementation (Tier 1 → 2B → Record mode)
-6. `/ppt-generator` skill (separate)
+6. `/draftify-ppt` skill (`.claude/skills/draftify-ppt/`)
 
 ---
 
@@ -267,7 +276,7 @@ When creating sub-agent prompts:
 - Phase 3-1 generators (**parallel**): policy 3min ∥ glossary 2min = **3min**
 - Phase 3-2 generators (sequential): screen 3min → process 2min = **5min**
 - Phase 3.5 quality-validator: 2min
-- Phase 4 ppt-generator: **10min**
+- Phase 4 draftify-ppt: **10min**
 
 > **Note**: Phase 1 조기 종료 조건: 최소 10페이지 확보 + 10분 경과
 

@@ -67,9 +67,19 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
 
 ### Main Agent
 - **[orchestrator.md](./agents/orchestrator.md)**: auto-draft-orchestrator (Main Agent)
-  - 전체 Phase 1-4 제어
+  - Phase 1-3.5 제어 (Phase 4는 /auto-draft 스킬 계층에서 실행)
   - 서브 에이전트 생명주기 관리
   - 에러 핸들링
+
+### Skills
+- **[.claude/skills/auto-draft/SKILL.md](../../.claude/skills/auto-draft/SKILL.md)**: /auto-draft 스킬
+  - 사용자 인터페이스 (인자 검증)
+  - orchestrator 호출 (Phase 1-3.5)
+  - /draftify-ppt 호출 (Phase 4)
+
+- **[.claude/skills/draftify-ppt/SKILL.md](../../.claude/skills/draftify-ppt/SKILL.md)**: /draftify-ppt 스킬
+  - 마크다운 → PPT 변환
+  - Phase 4 실행
 
 ### Sub-Agents (순서대로)
 1. **[input-analyzer.md](./agents/input-analyzer.md)**: Phase 2 분석 에이전트

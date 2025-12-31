@@ -48,7 +48,7 @@
 | Phase 3-1 (정책/용어) | 3분 | 병렬 실행, 더 긴 작업 기준 |
 | Phase 3-2 (화면/프로세스) | 5분 | 순차 실행 (3분 + 2분) |
 | Phase 3.5 (검증) | 2분 | quality-validator |
-| Phase 4 (PPT) | 10분 | ppt-generator |
+| Phase 4 (PPT) | 10분 | draftify-ppt |
 
 ### 개별 에이전트 타임아웃
 
