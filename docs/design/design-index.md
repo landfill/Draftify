@@ -81,223 +81,35 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
   - 마크다운 → PPT 변환
   - Phase 4 실행
 
-### Sub-Agents (순서대로)
-1. **[input-analyzer.md](./agents/input-analyzer.md)**: Phase 2 분석 에이전트
-   - 크롤링 결과 + 문서 통합
-   - analyzed-structure.json 생성
+### Sub-Agents (ordered)
+1. **[front-matter-generator.md](./agents/front-matter-generator.md)**: Phase 3-0 front matter (01-04)
+   - Cover / Revision History / TOC / Section Divider
 
-2. **[policy-generator.md](./agents/policy-generator.md)**: Phase 3-1 정책 생성
-   - 정책 ID 할당 (POL-AUTH-001...)
-   - 정책정의서 마크다운 생성
+2. **[back-matter-generator.md](./agents/back-matter-generator.md)**: Phase 3-0 back matter (09-10)
+   - References (optional) / EOD
 
-3. **[glossary-generator.md](./agents/glossary-generator.md)**: Phase 3-1 용어집 생성
-   - 용어 알파벳/가나다순 정렬
-   - 용어집 마크다운 생성
+3. **[input-analyzer.md](./agents/input-analyzer.md)**: Phase 2 analysis
+   - Consolidate crawl + docs
+   - Generate analyzed-structure.json
 
-4. **[screen-generator.md](./agents/screen-generator.md)**: Phase 3-2 화면정의 생성
-   - 화면 ID 할당 (SCR-001...)
-   - 스크린샷 임베딩
-   - 정책 ID 참조
+4. **[policy-generator.md](./agents/policy-generator.md)**: Phase 3-1 policy generation
+   - Assign policy IDs (POL-*)
+   - Generate policy markdown
 
-5. **[process-generator.md](./agents/process-generator.md)**: Phase 3-2 프로세스 생성
-   - 프로세스 흐름 정의
-   - 화면 ID, 정책 ID 참조
+5. **[glossary-generator.md](./agents/glossary-generator.md)**: Phase 3-1 glossary generation
+   - Sort terms
+   - Generate glossary markdown
 
-6. **[quality-validator.md](./agents/quality-validator.md)**: Phase 3.5 품질 검증
-   - ID 형식 검증
-   - 참조 무결성 검증
-   - 중복 및 순차성 검증
+6. **[screen-generator.md](./agents/screen-generator.md)**: Phase 3-2 screen definitions
+   - Assign screen IDs (SCR-*)
+   - Embed screenshots
+   - Reference policies
 
-**언제 읽나**: 해당 에이전트를 구현하거나 수정할 때
+7. **[process-generator.md](./agents/process-generator.md)**: Phase 3-2 process flows
+   - Define flow steps
+   - Reference screens/policies
 
----
+8. **[quality-validator.md](./agents/quality-validator.md)**: Phase 3.5 validation
+   - Validate IDs and references
+   - Detect duplicates/sequencing
 
-## 구현 가이드
-
-### [crawling-strategy.md](./crawling-strategy.md)
-**내용**: Phase 1 크롤링 전략 (부록 A)
-- Tier 1-3 순차 적용
-- Record 모드 (State 기반 SPA 대응)
-- BFS 알고리즘
-- URL 정규화
-- 우선순위 계산
-
-**언제 읽나**: Phase 1 크롤링 로직을 구현할 때
-
----
-
-### [record-mode-design.md](./record-mode-design.md)
-**내용**: Record 모드 상세 설계
-- State 기반 SPA 자동 캡처 (50% 케이스 대응)
-- 브라우저 오버레이 UI 설계
-- 실시간 스크린샷 캡처 워크플로우
-- 복구 기능 (중단 시 이어하기)
-- Record 모드 전용 크롤링 결과 스키마
-
-**언제 읽나**: Record 모드 UI 또는 State 기반 SPA 크롤링을 구현할 때
-
----
-
-### [schemas.md](./schemas.md)
-**내용**: 데이터 스키마 정의 (부록 B)
-- crawling-result.json 스키마
-- analyzed-structure.json 스키마
-- ID 명명 규칙 (POL-*, SCR-*, API-*)
-
-**언제 읽나**: JSON 데이터 구조를 구현하거나 검증할 때
-
----
-
-### [implementation-checklist.md](./implementation-checklist.md)
-**내용**: 구현 체크리스트 (부록 C)
-- 1-6단계 구현 로드맵
-- Phase 1 Tier별 구현 우선순위
-- 검증 항목
-
-**언제 읽나**: 구현 순서를 계획하거나 진행 상황을 추적할 때
-
----
-
-### [edge-cases.md](./edge-cases.md)
-**내용**: 엣지 케이스 및 대응 방안 (부록 E)
-- 5개 카테고리 (입력, 크롤링, 에이전트, ID 참조, Record 모드)
-- 14개 엣지 케이스 시나리오
-- 우선순위별 대응 전략 (P0-P3)
-
-**언제 읽나**: 예외 상황 처리 로직을 구현할 때
-
----
-
-## 보조 문서
-
-### [project-management.md](./project-management.md)
-**내용**: 프로젝트 관리 전략 (Section 8)
-- 출력 디렉토리 구조
-- 프로젝트명 결정 로직 (5단계 우선순위)
-- 버전 관리 (선택)
-
-**언제 읽나**: 파일 경로, 프로젝트명 로직을 구현할 때
-
----
-
-### [tech-stack.md](./tech-stack.md)
-**내용**: 기술 스택 선택 근거 (Section 5)
-- Chrome DevTools MCP 선택 이유
-- Claude Agent 설계 근거
-- PPT 생성 도구 (별도 스킬)
-- 웹 UI (선택, HTTP Polling)
-
-**언제 읽나**: 기술 선택 배경을 이해하거나 대안을 검토할 때
-
----
-
-### [ui-design.md](./ui-design.md)
-**내용**: 웹 UI 설계 (신규)
-- 3개 핵심 화면 (업로드, 진행 상태, 결과)
-- 기획자 중심 사용자 경험
-- Record 모드 브라우저 오버레이
-- HTTP Polling 기반 실시간 업데이트
-- API 명세
-
-**언제 읽나**: 웹 UI 구현 또는 사용자 경험 설계 시
-
----
-
-### [config.md](./config.md)
-**내용**: 설정값 중앙 관리
-- 크롤링 설정 (MAX_DEPTH, MAX_PAGES 등)
-- Phase별 타임아웃
-- 재시도 설정
-- ID 형식 및 정규식 패턴
-- 최소 성공 기준
-
-**언제 읽나**: 기본값 확인 또는 설정값 변경 시
-
----
-
-### [logging.md](./logging.md)
-**내용**: 로깅 표준
-- 로그 레벨 정의 (INFO, WARN, ERROR)
-- 로그 형식 표준
-- 에이전트별 로그 파일 경로
-- 로그 메시지 작성 가이드
-
-**언제 읽나**: 에이전트 로깅 구현 시
-
----
-
-## 아카이브
-
-### ⚠️ CRITICAL WARNING: DO NOT USE FOR IMPLEMENTATION
-
-**이 섹션의 모든 문서는 OUTDATED 레거시 문서입니다.**
-
-### service-design.md (원본)
-**위치**: `docs/archive/service-design.md`
-**설명**: 5910줄의 통합 설계 문서 (분리 전 원본)
-**사용처**: 히스토리 추적용 ONLY
-
-**❌ 절대 금지:**
-- 구현 참조로 사용
-- 에이전트 프롬프트 복사
-- 코드 생성 시 참조
-
-**✅ 유일한 용도:**
-- 문서 변경 이력 확인
-- 원본 의도 파악 (design/ 문서와 불일치 시)
-
-**🚨 ALL CURRENT SPECS ARE IN `docs/design/` - USE ONLY THAT DIRECTORY**
-
----
-
-## 빠른 참조
-
-### 구현 시나리오별 필수 문서
-
-| 작업 | 읽어야 할 문서 |
-|------|---------------|
-| 전체 시스템 이해 | `architecture.md` → `workflow.md` |
-| /auto-draft Skill 구현 | `error-handling.md` (Section 7.1) |
-| Main Agent 구현 | `agents/orchestrator.md` + `error-handling.md` |
-| Phase 1 크롤링 구현 | `crawling-strategy.md` + `schemas.md` (crawling-result.json) |
-| input-analyzer 구현 | `agents/input-analyzer.md` + `schemas.md` (analyzed-structure.json) |
-| policy/screen generator 구현 | 해당 `agents/*.md` + `schemas.md` (ID 규칙) |
-| 에러 처리 로직 구현 | `error-handling.md` + `edge-cases.md` |
-| 테스트 케이스 작성 | `edge-cases.md` (Section 부록 E 테스트 시나리오) |
-
----
-
-## 문서 간 의존성
-
-```
-architecture.md (전체 구조)
-    ↓
-workflow.md (Phase 흐름)
-    ↓
-┌─────────────┬─────────────┬─────────────┐
-│ Phase 1     │ Phase 2-3   │ Phase 4     │
-│ crawling    │ agents/     │ (별도 스킬) │
-│ -strategy   │ *.md        │             │
-└─────────────┴─────────────┴─────────────┘
-    ↓              ↓              ↓
-schemas.md (모든 Phase의 데이터 구조)
-    ↓
-error-handling.md (에러 복구 전략)
-    +
-edge-cases.md (예외 시나리오)
-```
-
----
-
-## 변경 이력
-
-| 날짜 | 버전 | 변경 내용 |
-|------|------|----------|
-| 2025-12-29 | 1.2 | Phase 3-1 병렬 실행, Phase 3-2 순차 실행 명확화 |
-| 2025-12-28 | 1.1 | ui-design.md 추가 (웹 UI 설계 문서) |
-| 2025-12-27 | 1.0 | 최초 분리 (service-design.md → 11개 파일) |
-
----
-
-**참고**: 이 인덱스는 설계 문서 네비게이션 전용입니다.
-사용자 가이드는 별도로 `README.md` 및 `docs/user-guide.md`를 참조하세요.

@@ -40,7 +40,7 @@
     {
       "url": "https://example.com/about",
       "screen_name": "about" | null,
-      "screenshot": "outputs/screenshots/screen-001.png",
+      "screenshot": "screenshots/screen-001.png",
       "dom": {
         "title": "About Us",
         "h1": "회사 소개",
@@ -130,7 +130,7 @@
     {
       "url": "https://todo-app.com/",
       "screen_name": null,
-      "screenshot": "outputs/screenshots/screen-001.png",
+      "screenshot": "screenshots/screen-001.png",
       "dom": {...},
       "depth": 0,
       "discoveredBy": "tier1"
@@ -166,7 +166,7 @@
     {
       "url": "https://wordcrack.world/",
       "screen_name": "home",
-      "screenshot": "outputs/screenshots/home.png",
+      "screenshot": "screenshots/home.png",
       "dom": {...},
       "depth": 0,
       "discoveredBy": "user_interaction",
@@ -175,7 +175,7 @@
     {
       "url": "https://wordcrack.world/",
       "screen_name": "quiz",
-      "screenshot": "outputs/screenshots/quiz.png",
+      "screenshot": "screenshots/quiz.png",
       "dom": {...},
       "depth": 0,
       "discoveredBy": "user_interaction",
@@ -314,7 +314,7 @@
 
 **형식**: `POL-{CATEGORY_CODE}-{SEQUENTIAL}`
 
-**카테고리 코드** (3-4자):
+**카테고리 코드** (2-5자):
 | 코드 | 의미 |
 |------|------|
 | `AUTH` | 인증/권한 |
@@ -357,6 +357,9 @@
 - `LINK`: 링크
 - `TABLE`: 테이블
 - `MODAL`: 모달
+- `NAV`: 네비게이션
+- `CARD`: 카드
+- `LIST`: 리스트
 
 **예시**:
 - `BTN-001`: 첫 번째 버튼
@@ -440,7 +443,7 @@
 import re
 
 # Policy ID
-assert re.match(r'^POL-(AUTH|VAL|DATA|ERR|SEC|BIZ|UI)-\d{3}$', 'POL-AUTH-001')
+assert re.match(r'^POL-[A-Z]{2,5}-\d{3}$', 'POL-AUTH-001')
 
 # Screen ID
 assert re.match(r'^SCR-\d{3}$', 'SCR-001')

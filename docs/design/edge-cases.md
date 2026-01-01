@@ -53,7 +53,7 @@
 
 ### P3 (Low - 사용자 수동 대응)
 9. **인증 필요 페이지**: Tier 3 (--urls) 권장 안내
-10. **Record 모드 중도 종료**: 복구 파일(.record-recovery.json) 제공
+10. **Record 모드 중도 종료**: 복구 파일(~/.draftify/record-sessions/{url-hash}.recovery.json) 제공
 11. **파일 읽기 권한 에러**: 로그 경고, 해당 파일 스킵
 12. **입력 파일 형식 불일치**: 로그 경고, 파싱 실패 시 무시
 

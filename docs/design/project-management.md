@@ -11,33 +11,39 @@
 
 ```
 outputs/
-├── todo-app/                    # 프로젝트 A
-│   ├── screenshots/
-│   │   ├── screen-001.png
-│   │   └── screen-002.png
-│   ├── analysis/
-│   │   ├── crawling-result.json
-│   │   └── analyzed-structure.json
-│   ├── sections/
-│   │   ├── 01-cover.md
-│   │   ├── 05-glossary.md
-│   │   ├── 06-policy-definition.md
-│   │   ├── 07-process-flow.md
-│   │   ├── 08-screen-definition.md
-│   │   └── ...
-│   ├── validation/
-│   │   └── validation-report.md
-│   ├── logs/
-│   │   ├── phase1.log
-│   │   └── errors.log
-│   └── final-draft.pptx
-│
-├── blog-mvp/                    # 프로젝트 B
-│   └── ...
-│
-└── ecommerce/                   # 프로젝트 C
-    └── ...
+??? todo-app/                    # ???? A
+?   ??? screenshots/
+?   ?   ??? screen-001.png
+?   ?   ??? screen-002.png
+?   ??? analysis/
+?   ?   ??? crawling-result.json
+?   ?   ??? analyzed-structure.json
+?   ??? sections/
+?   ?   ??? 01-cover.md
+?   ?   ??? 02-revision-history.md
+?   ?   ??? 03-table-of-contents.md
+?   ?   ??? 04-section-divider.md
+?   ?   ??? 05-glossary.md
+?   ?   ??? 06-policy-definition.md
+?   ?   ??? 07-process-flow.md
+?   ?   ??? 08-screen-definition.md
+?   ?   ??? 09-references.md
+?   ?   ??? 10-eod.md
+?   ?   ??? ...
+?   ??? validation/
+?   ?   ??? validation-report.md
+?   ??? logs/
+?   ?   ??? phase1.log
+?   ?   ??? errors.log
+?   ??? <project>-draft-V{version}.pptx
+?
+??? blog-mvp/                    # ???? B
+?   ??? ...
+?
+??? ecommerce/                   # ???? C
+    ??? ...
 ```
+
 
 ---
 
@@ -124,7 +130,7 @@ outputs/todo-app/
 │   ├── v1-20251226/
 │   ├── v2-20251227/
 │   └── latest -> v2-20251227/
-└── final-draft.pptx
+└── <project>-draft-V{version}.pptx
 ```
 
 **현재 MVP**: 단일 버전만 지원

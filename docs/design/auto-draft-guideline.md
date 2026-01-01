@@ -315,6 +315,7 @@ SCR-{SEQUENTIAL}
 - `BTN`: 버튼
 - `FORM`: 폼
 - `INPUT`: 입력 필드
+- `LINK`: 링크
 - `TABLE`: 테이블
 - `MODAL`: 모달
 - `NAV`: 네비게이션

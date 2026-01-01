@@ -35,7 +35,7 @@ Draftify는 **부분 성공 허용 (Graceful Degradation)** 원칙을 따릅니�
 |--------|---------|-------------|
 | **Critical** | input-analyzer | 전체 워크플로우 중단 |
 | **High** | screen-generator, policy-generator | 재시도 후 빈 섹션으로 대체 |
-| **Medium** | glossary-generator, process-generator | 재시도 후 빈 섹션으로 대체 |
+| **Medium** | front-matter-generator, back-matter-generator, glossary-generator, process-generator | retry then empty section |
 | **Low** | quality-validator | 재시도 없음, FAIL로 계속 진행 |
 
 ---
@@ -48,6 +48,8 @@ Draftify는 **부분 성공 허용 (Graceful Degradation)** 원칙을 따릅니�
 
 | 에이전트 | 재시도 조건 | 실패 시 동작 |
 |---------|-----------|------------|
+| front-matter-generator | timeout | empty section |
+| back-matter-generator | timeout | empty section |
 | input-analyzer | 타임아웃, 파싱 에러 | **전체 중단** |
 | policy-generator | 타임아웃, JSON 에러 | 빈 정책 섹션 생성 |
 | glossary-generator | 타임아웃 | 빈 용어집 생성 |
@@ -162,6 +164,30 @@ Draftify는 **부분 성공 허용 (Graceful Degradation)** 원칙을 따릅니�
 처리:
 1. 가능한 섹션만 포함하여 진행
 2. validation-report에 누락 사항 기록
+```
+
+---
+
+### Phase 3-0: ?? ?? ??
+
+#### front-matter-generator ??
+
+```
+??:
+1. 2? ???
+2. ?? ?: ? ?? ?? (???)
+3. Phase 3-1 ?? ??
+```
+
+#### back-matter-generator ??
+
+```
+??:
+1. 2? ???
+2. ?? ?:
+   - 10-eod.md? ? ?? ??
+   - 09-references.md? ?? ??
+3. Phase 3-1 ?? ??
 ```
 
 ---

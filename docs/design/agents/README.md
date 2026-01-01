@@ -6,32 +6,40 @@ This directory contains prompts for all Draftify agents.
 
 ### Main Agent
 - **[orchestrator.md](./orchestrator.md)**: auto-draft-orchestrator
-  - Orchestrates Phase 1-4 workflow
+  - Orchestrates Phase 1-3.5 workflow
   - Manages sub-agent lifecycle
   - Handles errors and retries
 
 ### Sub-Agents (Phase 2-3.5)
-1. **[input-analyzer.md](./input-analyzer.md)**: Phase 2
+1. **[front-matter-generator.md](./front-matter-generator.md)**: Phase 3-0 (섹션 01-04)
+   - 표지/이력/목차/섹션 타이틀 섹션 생성
+
+
+2. **[back-matter-generator.md](./back-matter-generator.md)**: Phase 3-0 (섹션 09-10)
+   - 참고문헌/종료(EOD) 섹션 생성
+
+
+3. **[input-analyzer.md](./input-analyzer.md)**: Phase 2
    - Consolidates crawling results + documents → analyzed-structure.json
 
-2. **[policy-generator.md](./policy-generator.md)**: Phase 3-1
+4. **[policy-generator.md](./policy-generator.md)**: Phase 3-1
    - Generates policy definitions (06-policy-definition.md)
    - Assigns policy IDs (POL-*)
 
-3. **[glossary-generator.md](./glossary-generator.md)**: Phase 3-1
+5. **[glossary-generator.md](./glossary-generator.md)**: Phase 3-1
    - Generates glossary (05-glossary.md)
    - No ID assignment (alphabetical sort)
 
-4. **[screen-generator.md](./screen-generator.md)**: Phase 3-2
+6. **[screen-generator.md](./screen-generator.md)**: Phase 3-2
    - Generates screen definitions (08-screen-definition.md)
    - Assigns screen IDs (SCR-*)
    - References policy IDs
 
-5. **[process-generator.md](./process-generator.md)**: Phase 3-2
+7. **[process-generator.md](./process-generator.md)**: Phase 3-2
    - Generates process flows (07-process-flow.md)
    - References screen IDs and policy IDs
 
-6. **[quality-validator.md](./quality-validator.md)**: Phase 3.5
+8. **[quality-validator.md](./quality-validator.md)**: Phase 3.5
    - Validates all generated sections
    - Produces PASS/FAIL report
 

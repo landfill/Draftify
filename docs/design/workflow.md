@@ -105,7 +105,7 @@
 │ • 스크린샷 임베딩                    │
 └─────────────────────────────────────┘
   │
-  │ final-draft.pptx
+  │ <project>-draft-V{version}.pptx
   │
   ▼
 [사용자에게 전달]
@@ -119,10 +119,11 @@
 |-------|------------|------|------------|
 | **1. 입력 수집** | URL, 문서 파일들, 스크린샷, 소스코드(선택) | MCP 크롤링, 파일 읽기 | crawling-result.json, 문서 텍스트 |
 | **2. 분석** | crawling-result.json, 문서 텍스트, 소스코드 | input-analyzer 에이전트 | analyzed-structure.json |
+| **3-0. 기본 섹션 생성** | analyzed-structure.json | front-matter-generator, back-matter-generator (**병렬**) | 01-cover.md, 02-revision-history.md, 03-table-of-contents.md, 04-section-divider.md, 09-references.md(옵션), 10-eod.md |
 | **3-1. 선행 생성** | analyzed-structure.json | 2개 에이전트 **병렬** 실행 | 06-policy-definition.md, 05-glossary.md |
 | **3-2. 후행 생성** | analyzed-structure.json, 06-policy-definition.md, 08-screen-definition.md | 2개 에이전트 순차 실행 (screen → process) | 08-screen-definition.md, 07-process-flow.md |
 | **3.5. 검증** | 모든 섹션.md, guideline | validator 에이전트 | validation-report.md (PASS/FAIL) |
-| **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (draftify-ppt) | final-draft.pptx 또는 HTML |
+| **4. 문서 생성** | 모든 섹션.md, 스크린샷, validation-report | 별도 스킬 (draftify-ppt) | <project>-draft-V{version}.pptx 또는 HTML |
 
 ---
 
@@ -167,7 +168,7 @@ URL ────┐
                     [draftify-ppt]
                             │
                             ▼
-                    final-draft.pptx
+                    <project>-draft-V{version}.pptx
 ```
 
 ---
@@ -208,6 +209,12 @@ URL ────┐
 - **실패 시**: 전체 중단 (필수 Phase)
 - **상세 문서**: [agents/input-analyzer.md](./agents/input-analyzer.md)
 
+### Phase 3-0: 기본 섹션 생성
+- **목표**: 표지/이력/목차/섹션 타이틀/참고문헌/EOD 기본 섹션 생성
+- **에이전트**: front-matter-generator, back-matter-generator (**병렬**)
+- **출력**: `01-cover.md`, `02-revision-history.md`, `03-table-of-contents.md`, `04-section-divider.md`, `09-references.md`(옵션), `10-eod.md`
+- **의존성**: Phase 2 완료 (analyzed-structure.json)
+
 ### Phase 3-1: 선행 섹션 생성
 - **목표**: 정책 및 용어 섹션 생성
 - **에이전트**: policy-generator, glossary-generator (**병렬**)
@@ -235,7 +242,7 @@ URL ────┐
 - **목표**: 마크다운 → PPT 변환
 - **실행 주체**: /auto-draft 스킬 (orchestrator 아님)
 - **호출 스킬**: /draftify-ppt
-- **출력**: `final-draft.pptx`
+- **출력**: `<project>-draft-V{version}.pptx`
 - **실패 시**: HTML 대체 버전 생성
 
 > **Note**: Phase 4는 orchestrator가 아닌 /auto-draft 스킬 계층에서 실행됩니다.
@@ -262,7 +269,7 @@ URL ────┐
                        ▼
 ┌─────────────── /auto-draft 스킬 영역 ────────────┐
 │                                                  │
-│ Phase 4: /draftify-ppt 호출 → final-draft.pptx  │
+│ Phase 4: /draftify-ppt 호출 → <project>-draft-V{version}.pptx  │
 │                                                  │
 └──────────────────────────────────────────────────┘
 ```

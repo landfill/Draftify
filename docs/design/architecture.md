@@ -95,7 +95,7 @@ Draftify는 **5계층 아키텍처**로 설계되었습니다:
 │  ├─ screenshots/                                     │
 │  ├─ analysis/                                        │
 │  ├─ sections/                                        │
-│  └─ final-draft.pptx                                 │
+│  └─ <project>-draft-V{version}.pptx                                 │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -225,7 +225,7 @@ const processResult = await Task({
 
 #### PPT 스킬 (Phase 4)
 - **저장 경로**: `outputs/<project>/`
-- **최종 산출물**: `final-draft.pptx`
+- **최종 산출물**: `<project>-draft-V{version}.pptx`
 
 ---
 

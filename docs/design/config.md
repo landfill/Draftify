@@ -37,7 +37,7 @@
 
 | 항목 | 값 |
 |------|-----|
-| Main Agent 전체 타임아웃 | **35분** |
+| Main Agent 전체 타임아웃 | **25분** |
 
 ### Phase별 타임아웃
 
@@ -45,6 +45,7 @@
 |-------|---------|------|
 | Phase 1 (크롤링) | 10분 | 20페이지 × 30초 + 버퍼 |
 | Phase 2 (분석) | 5분 | input-analyzer |
+| Phase 3-0 (기본 섹션) | 2분 | 병렬 실행 (Phase 3-1과 병렬) |
 | Phase 3-1 (정책/용어) | 3분 | 병렬 실행, 더 긴 작업 기준 |
 | Phase 3-2 (화면/프로세스) | 5분 | 순차 실행 (3분 + 2분) |
 | Phase 3.5 (검증) | 2분 | quality-validator |
@@ -54,6 +55,8 @@
 
 | 에이전트 | 타임아웃 | 밀리초 |
 |---------|---------|--------|
+| front-matter-generator | 2분 | 120,000 |
+| back-matter-generator | 2분 | 120,000 |
 | input-analyzer | 5분 | 300,000 |
 | policy-generator | 3분 | 180,000 |
 | glossary-generator | 2분 | 120,000 |
@@ -67,6 +70,8 @@
 
 | 에이전트 | 최대 재시도 | 백오프 간격 |
 |---------|-----------|------------|
+| front-matter-generator | 2회 | 5초, 10초 |
+| back-matter-generator | 2회 | 5초, 10초 |
 | input-analyzer | 3회 | 5초, 10초, 20초 |
 | policy-generator | 3회 | 5초, 10초, 20초 |
 | glossary-generator | 2회 | 5초, 10초 |

@@ -19,7 +19,7 @@
 - [ ] skill.md 작성 (인자 검증, Main Agent 호출)
 - [ ] CLI 옵션 파싱
 - [ ] Main Agent Task tool 호출 구현
-- [ ] 에러 핸들링 (error-handling.md Section 7.1 참조)
+- [ ] 에러 핸들링 (error-handling.md Phase별 에러 핸들링 참조)
 
 ### 2.5단계: 웹 UI 구현
 - [ ] Next.js 프로젝트 생성
@@ -51,6 +51,8 @@
 - [ ] crawling-result.json 생성
 
 ### 5단계: 서브 에이전트 프롬프트 작성
+- [ ] front-matter-generator.md (Phase 3-0)
+- [ ] back-matter-generator.md (Phase 3-0)
 - [ ] input-analyzer.md (Phase 2)
 - [ ] policy-generator.md (Phase 3-1)
 - [ ] glossary-generator.md (Phase 3-1)

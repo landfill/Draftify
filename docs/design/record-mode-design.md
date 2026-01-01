@@ -86,7 +86,7 @@ State: 'home', 'quiz', 'result'
 ### Phase 1: 준비
 
 ```python
-async def record_mode_phase1(url, source_dir):
+async def record_mode_phase1(url, source_dir, output_dir):
     """
     소스코드 분석 및 예상 화면 목록 추출
     """
@@ -106,7 +106,8 @@ async def record_mode_phase1(url, source_dir):
 
     return {
         'page': page,
-        'expected_screens': expected_screens
+        'expected_screens': expected_screens,
+        'output_dir': output_dir
     }
 ```
 
@@ -146,7 +147,7 @@ def infer_screens_from_source(source_dir):
 ### Phase 2: 사용자 인터랙션 모니터링
 
 ```python
-async def record_mode_phase2(page, expected_screens):
+async def record_mode_phase2(page, expected_screens, output_dir):
     """
     사용자 클릭 감지 + 자동 스크린샷 캡처
     """
@@ -218,7 +219,7 @@ async def record_mode_phase2(page, expected_screens):
                 screen_name = f"screen_{len(captured_screens) + 1}"
 
             # 스크린샷 캡처
-            screenshot_path = f"outputs/screenshots/{screen_name}.png"
+            screenshot_path = f"{output_dir}/screenshots/{screen_name}.png"
             await page.screenshot(path=screenshot_path)
 
             # DOM 상태 캡처
@@ -228,7 +229,7 @@ async def record_mode_phase2(page, expected_screens):
             captured_screens.append({
                 'name': screen_name,
                 'url': page.url,
-                'screenshot': screenshot_path,
+                'screenshot': f"screenshots/{screen_name}.png",
                 'dom': dom_state,
                 'timestamp': time.time()
             })
@@ -272,7 +273,7 @@ async def capture_dom_state(page):
 ### Phase 3: 결과 생성
 
 ```python
-def generate_crawl_result_from_record(captured_screens):
+def generate_crawl_result_from_record(captured_screens, base_url, max_pages, source_dir, expected_screens):
     """
     Record 모드 결과를 crawling-result.json 형식으로 변환
     """
@@ -281,8 +282,13 @@ def generate_crawl_result_from_record(captured_screens):
         'metadata': {
             'mode': 'record',
             'timestamp': datetime.now().isoformat(),
-            'total_screens': len(captured_screens),
-            'manual_capture': True
+            'crawling_strategy': 'record_mode',
+            'total_pages': len(captured_screens),
+            'max_depth': 0,
+            'max_pages': max_pages,
+            'base_url': base_url,
+            'source_dir_provided': bool(source_dir),
+            'expected_screens': expected_screens
         },
         'pages': [
             {
@@ -296,7 +302,6 @@ def generate_crawl_result_from_record(captured_screens):
             for screen in captured_screens
         ],
         'links': [],  # Record 모드는 링크 추출 안 함
-        'crawling_strategy': 'record_mode'
     }
 ```
 
@@ -371,16 +376,19 @@ async def auto_detect_screen_changes(page):
   "metadata": {
     "mode": "record",
     "timestamp": "2025-12-27T10:30:00Z",
-    "total_screens": 5,
-    "manual_capture": true,
-    "expected_screens": ["home", "quiz", "result", "leaderboard", "settings"],
-    "source_dir_provided": true
+    "crawling_strategy": "record_mode",
+    "total_pages": 5,
+    "max_depth": 0,
+    "max_pages": 50,
+    "base_url": "https://wordcrack.world",
+    "source_dir_provided": true,
+    "expected_screens": ["home", "quiz", "result", "leaderboard", "settings"]
   },
   "pages": [
     {
       "url": "https://wordcrack.world/",
       "screen_name": "home",
-      "screenshot": "outputs/screenshots/home.png",
+      "screenshot": "screenshots/home.png",
       "dom": {
         "title": "Word Crack World",
         "h1": "Word Crack World",
@@ -395,7 +403,7 @@ async def auto_detect_screen_changes(page):
     {
       "url": "https://wordcrack.world/",
       "screen_name": "quiz",
-      "screenshot": "outputs/screenshots/quiz.png",
+      "screenshot": "screenshots/quiz.png",
       "dom": {
         "title": "Word Crack World",
         "h1": "Movies Quiz",
@@ -410,7 +418,6 @@ async def auto_detect_screen_changes(page):
     }
   ],
   "links": [],
-  "crawling_strategy": "record_mode"
 }
 ```
 
@@ -774,12 +781,13 @@ async def phase1_intelligent_crawling(url, options):
         print("\n🎥 Record 모드 활성화\n")
 
         # Phase 1: 준비
-        context = await record_mode_phase1(url, options.source_dir)
+        context = await record_mode_phase1(url, options.source_dir, options.output_dir)
 
         # Phase 2: 사용자 인터랙션
         captured_screens = await record_mode_phase2(
             context['page'],
-            context['expected_screens']
+            context['expected_screens'],
+            context['output_dir']
         )
 
         # Phase 3: 검증
@@ -787,10 +795,16 @@ async def phase1_intelligent_crawling(url, options):
         validate_record_result(captured_screens, context['expected_screens'])
 
         # Phase 4: 결과 생성
-        result = generate_crawl_result_from_record(captured_screens)
+        result = generate_crawl_result_from_record(
+            captured_screens,
+            url,
+            options.max_pages,
+            options.source_dir,
+            context['expected_screens']
+        )
 
         # crawling-result.json 저장
-        save_json(result, 'outputs/analysis/crawling-result.json')
+        save_json(result, f"{context['output_dir']}/analysis/crawling-result.json")
 
         return result
 

@@ -27,7 +27,9 @@ You are the **gateway** between raw data (Phase 1) and structured generation (Ph
   - Focus on: `routes/**`, `api/**`, `pages/**`, `app/**`, `components/**`
 
 ### Input Location
-All input files are located in: `outputs/{projectName}/`
+All project-scoped inputs are located in: `outputs/{projectName}/`.
+
+If `sourceDir` is provided, it may be an original path outside the outputs directory.
 
 If optional files are not provided, proceed with crawling-result.json only.
 

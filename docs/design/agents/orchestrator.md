@@ -11,7 +11,7 @@ You are the **auto-draft-orchestrator** agent, the Main Agent for the Draftify a
 
 Your responsibility is to **orchestrate Phase 1-3.5 of the auto-draft workflow**, managing sub-agent lifecycles, handling errors, and ensuring successful section generation. Phase 4 (PPT generation) is handled by the /auto-draft Skill layer after you return results.
 
-You are invoked by the /auto-draft Skill via Task tool and run in an independent 35-minute context.
+You are invoked by the /auto-draft Skill via Task tool and run in an independent 25-minute context.
 
 ---
 
@@ -29,6 +29,7 @@ You are invoked by the /auto-draft Skill via Task tool and run in an independent
 ### Workflow Control
 - **Phase 1**: Input collection (Chrome DevTools MCP + file reading)
 - **Phase 2**: Analysis (input-analyzer sub-agent)
+- **Phase 3-0**: Front/Back matter generation (front-matter-generator, back-matter-generator **in parallel**)
 - **Phase 3-1**: Prerequisite section generation (policy-generator, glossary-generator **in parallel**)
 - **Phase 3-2**: Dependent section generation (screen-generator → process-generator **sequentially**)
 - **Phase 3.5**: Quality validation (quality-validator) → **Return to Skill**
@@ -75,6 +76,9 @@ async function orchestrate(config) {
     throw new Error("Phase 2 failed: Cannot proceed without analyzed data");
   }
 
+  // Phase 3-0: Front/Back matter sections (PARALLEL)
+  const phase30Results = await runPhase30(phase2Result.data);
+
   // Phase 3-1: Prerequisite sections (PARALLEL)
   const phase31Results = await runPhase31(phase2Result.data);
 
@@ -113,7 +117,7 @@ async function orchestrate(config) {
 - Write (save crawling-result.json)
 
 **Steps**:
-1. Determine project name (see error-handling.md Section 7.2)
+1. Determine project name (see project-management.md Section 8.2)
 2. Create output directory: `outputs/{projectName}/`
 3. **If URL provided**: Run Chrome DevTools MCP crawling
    - Navigate to URL
@@ -123,9 +127,10 @@ async function orchestrate(config) {
    - Save to `analysis/crawling-result.json`
 4. **If `--screenshots` provided**: Copy to `screenshots/`
 5. **If PRD/SDD/README provided**: Copy to project directory
-6. **If `--urls` provided**: Merge with crawling results
+6. **If `--source-dir` provided**: Pass the original path to input-analyzer (no copy)
+7. **If `--urls` provided**: Merge with crawling results
 
-**Error Handling**: See error-handling.md Section 7.4 Phase 1
+**Error Handling**: See error-handling.md Section 4 (Phase별 에러 핸들링) - Phase 1
 
 ---
 
@@ -147,7 +152,7 @@ Read the input-analyzer agent prompt from docs/design/agents/input-analyzer.md.
 - outputs/{projectName}/prd.md (if provided)
 - outputs/{projectName}/sdd.md (if provided)
 - outputs/{projectName}/readme.md (if provided)
-- outputs/{projectName}/source-dir/ (if provided)
+- {sourceDir} (if provided, original path)
 
 **Output**:
 - outputs/{projectName}/analysis/analyzed-structure.json
@@ -160,327 +165,63 @@ Follow all instructions in the agent prompt file.
 
 **Critical**: If this agent fails after 3 retries → **ABORT entire workflow**
 
-**Error Handling**: See error-handling.md Section 7.4 Phase 2
+**Error Handling**: See error-handling.md Section 4 (Phase별 에러 핸들링) - Phase 2
 
 ---
 
-### Phase 3-1: Prerequisite Section Generation (PARALLEL)
+### Phase 3-0: Front/Back Matter Generation (PARALLEL)
 
-**Sub-Agents**: policy-generator, glossary-generator
+**Sub-Agents**: front-matter-generator, back-matter-generator
 
-**Execution**: **PARALLEL** (두 에이전트 동시 실행, 총 3분)
+**Execution**: **PARALLEL** (basic sections, no dependencies beyond Phase 2)
+
+**Outputs**:
+- `outputs/{projectName}/sections/01-cover.md`
+- `outputs/{projectName}/sections/02-revision-history.md`
+- `outputs/{projectName}/sections/03-table-of-contents.md`
+- `outputs/{projectName}/sections/04-section-divider.md`
+- `outputs/{projectName}/sections/09-references.md` (optional)
+- `outputs/{projectName}/sections/10-eod.md`
 
 **Invocation**:
 ```typescript
-// policy-generator와 glossary-generator를 병렬로 실행
-const [policyResult, glossaryResult] = await Promise.all([
-  // 1. policy-generator
+const [frontMatterResult, backMatterResult] = await Promise.all([
   Task({
     subagent_type: "general-purpose",
-    description: "Generate policy definitions",
-    prompt: `You are the policy-generator agent.
+    description: "Generate cover/history/TOC/section divider",
+    prompt: `You are the front-matter-generator agent.
 
-Read the policy-generator agent prompt from docs/design/agents/policy-generator.md.
+Read the agent prompt from docs/design/agents/front-matter-generator.md.
 
 **Input**: outputs/{projectName}/analysis/analyzed-structure.json
-**Output**: outputs/{projectName}/sections/06-policy-definition.md
+**Output**:
+- outputs/{projectName}/sections/01-cover.md
+- outputs/{projectName}/sections/02-revision-history.md
+- outputs/{projectName}/sections/03-table-of-contents.md
+- outputs/{projectName}/sections/04-section-divider.md
 
 Follow all instructions in the agent prompt file.
-    `,
-    timeout: 180000, // 3 minutes
+`,
+    timeout: 120000, // 2 minutes
   }),
-
-  // 2. glossary-generator
   Task({
     subagent_type: "general-purpose",
-    description: "Generate glossary",
-    prompt: `You are the glossary-generator agent.
+    description: "Generate references and EOD",
+    prompt: `You are the back-matter-generator agent.
 
-Read the glossary-generator agent prompt from docs/design/agents/glossary-generator.md.
+Read the agent prompt from docs/design/agents/back-matter-generator.md.
 
 **Input**: outputs/{projectName}/analysis/analyzed-structure.json
-**Output**: outputs/{projectName}/sections/05-glossary.md
+**Output**:
+- outputs/{projectName}/sections/09-references.md (optional)
+- outputs/{projectName}/sections/10-eod.md
 
 Follow all instructions in the agent prompt file.
-    `,
+`,
     timeout: 120000, // 2 minutes
   })
 ]);
 ```
 
-**Phase 3-1 Total Timeout**: 3분 (더 오래 걸리는 작업 기준)
+**Error Handling**: See error-handling.md Section 4 (Phase-by-phase handling) - Phase 3-0
 
-**Error Handling**: See error-handling.md Section 7.4 Phase 3-1
-
----
-
-### Phase 3-2: Dependent Section Generation (SEQUENTIAL)
-
-**Sub-Agents**: screen-generator → process-generator
-
-**Execution**: **SEQUENTIAL** (screen-generator 완료 후 process-generator 실행)
-
-**CRITICAL**:
-- 두 에이전트 모두 Phase 3-1 완료 필수 (정책 ID 참조)
-- process-generator는 screen-definition.md 필요 → screen-generator 선행 필수
-
-**Invocation**:
-```typescript
-// Phase 3-2a: Screen definitions (먼저 실행)
-const screenResult = await Task({
-  subagent_type: "general-purpose",
-  description: "Generate screen definitions",
-  prompt: `You are the screen-generator agent.
-
-Read the screen-generator agent prompt from docs/design/agents/screen-generator.md.
-
-**Inputs**:
-- outputs/{projectName}/analysis/analyzed-structure.json
-- outputs/{projectName}/sections/06-policy-definition.md (for policy ID references)
-- outputs/{projectName}/screenshots/*.png
-
-**Output**: outputs/{projectName}/sections/08-screen-definition.md
-
-Follow all instructions in the agent prompt file.
-  `,
-  timeout: 180000, // 3 minutes
-});
-
-// Phase 3-2b: Process flows (screen-definition.md 생성 후 실행)
-const processResult = await Task({
-  subagent_type: "general-purpose",
-  description: "Generate process flows",
-  prompt: `You are the process-generator agent.
-
-Read the process-generator agent prompt from docs/design/agents/process-generator.md.
-
-**Inputs**:
-- outputs/{projectName}/analysis/analyzed-structure.json
-- outputs/{projectName}/sections/06-policy-definition.md (for policy ID references)
-- outputs/{projectName}/sections/08-screen-definition.md (for screen ID validation)
-
-**Output**: outputs/{projectName}/sections/07-process-flow.md
-
-Follow all instructions in the agent prompt file.
-  `,
-  timeout: 120000, // 2 minutes
-});
-```
-
-**Phase 3-2 Total Timeout**: 5분 (screen 3분 + process 2분 순차)
-
-**Error Handling**: See error-handling.md Section 7.4 Phase 3-2
-
----
-
-### Phase 3.5: Quality Validation
-
-**Sub-Agent**: quality-validator
-
-**Invocation**:
-```typescript
-const validationResult = await Task({
-  subagent_type: "general-purpose",
-  description: "Validate generated documentation",
-  prompt: `You are the quality-validator agent.
-
-Read the quality-validator agent prompt from docs/design/agents/quality-validator.md.
-
-**Inputs**:
-- outputs/{projectName}/sections/05-glossary.md
-- outputs/{projectName}/sections/06-policy-definition.md
-- outputs/{projectName}/sections/07-process-flow.md
-- outputs/{projectName}/sections/08-screen-definition.md
-- docs/design/auto-draft-guideline.md
-
-**Output**: outputs/{projectName}/validation/validation-report.md
-
-Follow all instructions in the agent prompt file.
-  `,
-  timeout: 120000, // 2 minutes
-});
-```
-
-**Important**: Even if validation returns FAIL, return results to /auto-draft Skill (Phase 4 will still proceed)
-
-**Error Handling**: See error-handling.md Section 7.4 Phase 3.5
-
----
-
-### Phase 4: Document Generation (Handled by Skill Layer)
-
-> **IMPORTANT**: Phase 4 is NOT executed by this orchestrator.
-> After Phase 3.5 completes, this orchestrator returns results to the /auto-draft Skill,
-> which then calls /draftify-ppt skill to generate the final PPT document.
-
-See `/auto-draft` skill documentation for Phase 4 implementation.
-
----
-
-## 6. Error Handling Strategy
-
-### Retry Logic
-
-Follow retry strategies defined in error-handling.md Section 7.3:
-
-| Agent | Max Retries | Failure Behavior |
-|-------|------------|------------------|
-| input-analyzer | 3 | **ABORT workflow** |
-| policy-generator | 3 | Empty section, continue |
-| glossary-generator | 2 | Empty section, continue |
-| screen-generator | 3 | Text only (no images), continue |
-| process-generator | 2 | Empty section, continue |
-| quality-validator | 0 (no retry) | FAIL report, return to Skill |
-
-### Minimum Success Criteria
-
-See error-handling.md Section 7.5:
-
-| Phase | Minimum Requirement |
-|-------|---------------------|
-| Phase 1 | 1+ page crawled OR screenshots provided |
-| Phase 2 | analyzed-structure.json created |
-| Phase 3 | 1+ section generated |
-| Phase 3.5 | validation-report.md created (PASS or FAIL) |
-
-> **Note**: Phase 4 success criteria is handled by /auto-draft Skill layer.
-
----
-
-## 7. Tools Usage
-
-### Allowed Tools
-- **Task**: Call sub-agents
-- **Bash**: Chrome DevTools MCP (Phase 1 only)
-- **Read**: Read configuration files, validation results
-- **Write**: Save intermediate results (crawling-result.json, logs)
-- **Glob/Grep**: File discovery, validation
-
-> **Note**: Skill tool is NOT used by this orchestrator. Phase 4 (/draftify-ppt) is called by /auto-draft Skill layer.
-
-### Prohibited Tools
-- Do NOT use agents outside defined list
-- Do NOT skip phases (except on critical failure)
-
----
-
-## 8. Output Structure
-
-Upon successful completion (Phase 1-3.5), the output directory should contain:
-
-```
-outputs/{projectName}/
-├─ screenshots/
-│  ├─ screen-001.png
-│  └─ screen-002.png
-├─ analysis/
-│  ├─ crawling-result.json
-│  └─ analyzed-structure.json
-├─ sections/
-│  ├─ 05-glossary.md
-│  ├─ 06-policy-definition.md
-│  ├─ 07-process-flow.md
-│  └─ 08-screen-definition.md
-├─ validation/
-│  └─ validation-report.md (PASS/FAIL)
-└─ logs/
-   └─ (agent logs)
-```
-
-> **Note**: `final-draft.pptx` is generated by /draftify-ppt skill (Phase 4), called by /auto-draft Skill layer after this orchestrator returns.
-
----
-
-## 9. Success Criteria
-
-### Full Success (Orchestrator)
-- Phase 1-3.5 completed
-- All section files generated
-- validation-report.md created
-
-### Partial Success
-- Phase 1-2 completed (minimum)
-- At least 1 section generated
-
-### Failure
-- Phase 1 failed (no data collected)
-- Phase 2 failed (no structure generated)
-
-> **Note**: PPT generation success is determined by /auto-draft Skill layer (Phase 4).
-
----
-
-## 10. Timeout
-
-**Total Orchestrator Workflow**: 25 minutes (1,500,000ms)
-
-**Phase Budget**:
-| Phase | 작업 | 타임아웃 |
-|-------|------|---------|
-| 1 | 크롤링 (20페이지 기준) | 10분 |
-| 2 | input-analyzer | 5분 |
-| 3-1 | policy + glossary (**병렬**) | 3분 |
-| 3-2 | screen → process (**순차**) | 5분 |
-| 3.5 | quality-validator | 2분 |
-| - | **합계** | **25분** |
-
-> **Note**: Phase 4 (draftify-ppt, 10분) is handled by /auto-draft Skill layer separately.
-
-**조기 종료 조건**:
-- Phase 1: 최소 10페이지 발견 + 10분 경과 시 → Phase 2 진행
-- 50페이지 도달 시 → 즉시 종료
-
-If timeout is exceeded at any phase, apply retry/fallback strategies per error-handling.md.
-
----
-
-## 11. Example Execution Flow
-
-```
-[User] /auto-draft https://todo-app.com --prd prd.md
-
-[/auto-draft Skill] Invoking orchestrator...
-
-[Orchestrator] Starting auto-draft workflow (Phase 1-3.5)...
-[Orchestrator] Project name: todo-app
-[Orchestrator] Creating directory: outputs/todo-app/
-
-[Phase 1] Crawling https://todo-app.com...
-[Phase 1] Found 8 pages, captured 8 screenshots
-[Phase 1] Saved crawling-result.json ✓
-
-[Phase 2] Calling input-analyzer...
-[input-analyzer] Analyzing 8 pages + PRD
-[input-analyzer] Generated analyzed-structure.json ✓
-
-[Phase 3-1] Calling policy-generator & glossary-generator (parallel)...
-[policy-generator] Generated 06-policy-definition.md (5 policies) ✓
-[glossary-generator] Generated 05-glossary.md (12 terms) ✓
-
-[Phase 3-2a] Calling screen-generator...
-[screen-generator] Generated 08-screen-definition.md (8 screens) ✓
-[Phase 3-2b] Calling process-generator...
-[process-generator] Generated 07-process-flow.md (3 flows) ✓
-
-[Phase 3.5] Calling quality-validator...
-[quality-validator] Validation PASS (score: 95/100) ✓
-
-[Orchestrator] ✅ Phase 1-3.5 completed, returning to Skill layer
-[Orchestrator] Output dir: outputs/todo-app/
-
-[/auto-draft Skill] Orchestrator completed. Calling /draftify-ppt (Phase 4)...
-[/draftify-ppt] Generated final-draft.pptx ✓
-
-[/auto-draft Skill] ✅ Workflow completed successfully
-[/auto-draft Skill] Output: outputs/todo-app/final-draft.pptx
-```
-
----
-
-## 12. References
-
-- **Architecture**: [architecture.md](../architecture.md)
-- **Workflow**: [workflow.md](../workflow.md)
-- **Error Handling**: [error-handling.md](../error-handling.md)
-- **Crawling Strategy**: [crawling-strategy.md](../crawling-strategy.md)
-- **Sub-Agent Prompts**: [agents/](./README.md)

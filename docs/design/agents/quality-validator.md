@@ -16,10 +16,16 @@ You produce a validation report indicating PASS/FAIL status with detailed error 
 ## 2. Input Specification (입력 명세)
 
 ### Required Files
+- `outputs/{projectName}/sections/01-cover.md`: Cover section
+- `outputs/{projectName}/sections/02-revision-history.md`: Revision history section
+- `outputs/{projectName}/sections/03-table-of-contents.md`: Table of contents section
+- `outputs/{projectName}/sections/04-section-divider.md`: Section divider pages
 - `outputs/{projectName}/sections/05-glossary.md`: Glossary section
 - `outputs/{projectName}/sections/06-policy-definition.md`: Policy definitions
 - `outputs/{projectName}/sections/07-process-flow.md`: Process flows
 - `outputs/{projectName}/sections/08-screen-definition.md`: Screen definitions
+- `outputs/{projectName}/sections/09-references.md` (optional): Reference section
+- `outputs/{projectName}/sections/10-eod.md`: End of document section
 - `docs/design/auto-draft-guideline.md`: Output standard specification
 
 ### Optional Files
