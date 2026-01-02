@@ -1,7 +1,7 @@
 # Draftify 시스템 아키텍처
 
-**버전**: 1.3
-**최종 갱신**: 2025-12-29
+**버전**: 1.4
+**최종 갱신**: 2026-01-02
 
 > **Note**: 이 문서는 시스템 아키텍처의 완전한 명세입니다.
 
@@ -71,11 +71,17 @@ Draftify는 **5계층 아키텍처**로 설계되었습니다:
 │  │Chrome    │  │input-    │  │           │         │
 │  │DevTools  │  │analyzer  │  │/draftify- │         │
 │  │          │  │          │  │ppt        │         │
-│  │          │  │policy-   │  │           │         │
-│  │          │  │generator │  │(스킬 계층 │         │
+│  │          │  │front-    │  │           │         │
+│  │          │  │matter-gen│  │(스킬 계층 │         │
 │  │          │  │          │  │ 에서 호출)│         │
-│  │          │  │glossary- │  │           │         │
-│  │          │  │generator │  └───────────┘         │
+│  │          │  │back-     │  │           │         │
+│  │          │  │matter-gen│  └───────────┘         │
+│  │          │  │          │                        │
+│  │          │  │policy-   │                        │
+│  │          │  │generator │                        │
+│  │          │  │          │                        │
+│  │          │  │glossary- │                        │
+│  │          │  │generator │                        │
 │  │          │  │          │                        │
 │  │          │  │screen-   │                        │
 │  │          │  │generator │                        │
@@ -133,14 +139,14 @@ Draftify는 **5계층 아키텍처**로 설계되었습니다:
      subagent_type: "general-purpose",
      description: "Execute auto-draft workflow",
      prompt: "You are the auto-draft-orchestrator agent...",
-     timeout: 2100000  // 35분
+     timeout: 1500000  // 25분
    })
    ```
 
 3. **독립 컨텍스트 실행**:
    - Main Agent는 독립된 컨텍스트에서 실행
    - 메인 세션 컨텍스트와 분리
-   - 35분 타임아웃
+   - 25분 타임아웃
 
 ---
 
@@ -172,6 +178,7 @@ await chromeDevTools.take_screenshot()
 | Phase | 에이전트 | 실행 방식 | 의존성 |
 |-------|---------|---------|--------|
 | **Phase 2** | input-analyzer | 순차 (단일) | Phase 1 완료 필수 |
+| **Phase 3-0** | front-matter-generator, back-matter-generator | **병렬** (2개) | Phase 2 완료 필수 |
 | **Phase 3-1** | policy-generator, glossary-generator | **병렬** (2개) | Phase 2 완료 필수 |
 | **Phase 3-2** | screen-generator → process-generator | **순차** (2개) | Phase 3-1 완료 필수, screen → process 순서 |
 | **Phase 3.5** | quality-validator | 순차 (단일) | Phase 3-2 완료 필수 |
@@ -252,7 +259,7 @@ const processResult = await Task({
 
 **해결** (Skill + Main Agent):
 - ✅ Skill: 100줄 미만 (인자 검증만)
-- ✅ Main Agent: 독립 컨텍스트 (35분, 크롤링 데이터 포함)
+- ✅ Main Agent: 독립 컨텍스트 (25분, 크롤링 데이터 포함)
 - ✅ 메인 세션 컨텍스트 보호
 - ✅ 재시도 및 복구 가능
 
