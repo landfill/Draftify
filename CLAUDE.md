@@ -99,7 +99,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Must Read First (Core Documents)
 
 1. **[docs/design/architecture.md](./docs/design/architecture.md)** - System architecture
-   - 4-layer architecture (User → Skill → Orchestration → Execution → Data)
+   - 5-layer architecture (User → Skill → Orchestration → Execution → Data)
    - Skill + Main Agent + Sub-Agents pattern
    - Component relationships and data flow
 
@@ -121,7 +121,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 5. **[docs/requirements/prd.md](./docs/requirements/prd.md)** - Product requirements
    - Input types, output formats, success criteria
-   - Non-functional requirements (30min timeout, partial success handling)
+   - Non-functional requirements (35min timeout, partial success handling)
 
 ### Implementation Guides
 
