@@ -157,14 +157,26 @@ class DraftifyPPTGenerator:
         version = self.analyzed_data.get("project", {}).get("version", "0.1")
         self.output_path = self._output_path_base / f"{clean_name}-draft-V{version}.pptx"
 
-        section_files = {
+        # Required sections (warning if missing)
+        required_files = {
             "glossary": "05-glossary.md",
             "policy": "06-policy-definition.md",
             "process": "07-process-flow.md",
             "screen": "08-screen-definition.md",
         }
 
-        for key, filename in section_files.items():
+        # Optional sections (use fallback if missing)
+        optional_files = {
+            "cover": "01-cover.md",
+            "history": "02-revision-history.md",
+            "toc": "03-table-of-contents.md",
+            "divider": "04-section-divider.md",
+            "references": "09-references.md",
+            "eod": "10-eod.md",
+        }
+
+        # Load required sections
+        for key, filename in required_files.items():
             filepath = self.sections_dir / filename
             if filepath.exists():
                 with open(filepath, "r", encoding="utf-8") as f:
@@ -173,6 +185,17 @@ class DraftifyPPTGenerator:
             else:
                 print(f"[WARN] Warning: {filename} not found")
                 self.sections[key] = ""
+
+        # Load optional sections (None = use fallback)
+        for key, filename in optional_files.items():
+            filepath = self.sections_dir / filename
+            if filepath.exists():
+                with open(filepath, "r", encoding="utf-8") as f:
+                    self.sections[key] = f.read()
+                print(f"[OK] Loaded: {filename}")
+            else:
+                print(f"[INFO] Optional: {filename} not found (using defaults)")
+                self.sections[key] = None
 
         return True
 
@@ -363,14 +386,47 @@ class DraftifyPPTGenerator:
 
     # === Slide Generation Methods ===
 
+    def _parse_cover_markdown(self, content: str) -> dict:
+        """Parse cover metadata from markdown content."""
+        result = {"name": None, "version": None, "date": None, "author": None}
+        for line in content.split('\n'):
+            line = line.strip()
+            # Match: - **Key**: Value or **Key**: Value
+            match = re.match(r'^-?\s*\*\*([^*]+)\*\*:\s*(.+)', line)
+            if match:
+                key = match.group(1).strip().lower()
+                value = match.group(2).strip()
+                if '프로젝트' in key or 'project' in key or '이름' in key or 'name' in key:
+                    result["name"] = value
+                elif '버전' in key or 'version' in key:
+                    result["version"] = value
+                elif '작성일' in key or 'date' in key or '날짜' in key:
+                    result["date"] = value
+                elif '작성자' in key or 'author' in key:
+                    result["author"] = value
+            # Match H1 title: # Project Name 기획서
+            elif line.startswith('# '):
+                title = line[2:].strip()
+                # Remove "기획서" suffix if present
+                if title.endswith('기획서'):
+                    title = title[:-3].strip()
+                if not result["name"]:
+                    result["name"] = title
+        return result
+
     def add_cover_slide(self) -> None:
         """Update existing cover slide from template - only change title and date."""
         # Use the first slide from template (already preserved in create_presentation)
         slide = self.prs.slides[0]
 
-        project_name = self.analyzed_data.get("project", {}).get("name", "기획서")
-        version = self.analyzed_data.get("project", {}).get("version", "1.0")
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        # Try to use 01-cover.md first, fallback to analyzed_data
+        cover_data = {}
+        if self.sections.get("cover"):
+            cover_data = self._parse_cover_markdown(self.sections["cover"])
+
+        project_name = cover_data.get("name") or self.analyzed_data.get("project", {}).get("name", "기획서")
+        version = cover_data.get("version") or self.analyzed_data.get("project", {}).get("version", "1.0")
+        date_str = cover_data.get("date") or datetime.now().strftime("%Y-%m-%d")
 
         # Find and update existing shapes by name
         for shape in slide.shapes:
@@ -404,28 +460,46 @@ class DraftifyPPTGenerator:
 
         print("[OK] Updated: Cover slide (template preserved)")
 
+    def _parse_history_markdown(self, content: str) -> list[list[str]]:
+        """Parse revision history table from markdown content.
+        Returns list of rows, each row is [version, date, changes, author, note]."""
+        tables = self.parser.parse_tables(content)
+        if tables and tables[0].get('rows'):
+            return tables[0]['rows']
+        return []
+
     def add_history_slide(self) -> None:
-        """Update existing history slide from template - only update table row 1."""
+        """Update existing history slide from template - only update table rows."""
         # Use the second slide from template (already preserved in create_presentation)
         slide = self.prs.slides[1]
 
-        version = self.analyzed_data.get("project", {}).get("version", "1.0")
-        author = self.analyzed_data.get("project", {}).get("author", "Draftify")
-        date_str = datetime.now().strftime("%Y.%m.%d")
+        # Try to use 02-revision-history.md first
+        history_rows = []
+        if self.sections.get("history"):
+            history_rows = self._parse_history_markdown(self.sections["history"])
 
-        # Find the table and update first data row
+        # Fallback to default if no history from markdown
+        if not history_rows:
+            version = self.analyzed_data.get("project", {}).get("version", "1.0")
+            author = self.analyzed_data.get("project", {}).get("author", "Draftify")
+            date_str = datetime.now().strftime("%Y.%m.%d")
+            history_rows = [[version, date_str, "기획서 자동 생성", author, ""]]
+
+        # Find the table and update rows
         for shape in slide.shapes:
             if shape.has_table:
                 table = shape.table
-                # Row 0 is header, Row 1 is first data row
-                if len(table.rows) > 1:
-                    row = table.rows[1]
-                    # Columns: ver, 변경일, 변경내용, 작성자, 비고
-                    new_values = [version, date_str, "기획서 자동 생성", author, ""]
-                    for ci, cell in enumerate(row.cells):
-                        if ci < len(new_values):
-                            # Preserve formatting by updating run text, not cell.text
-                            self._update_cell_text(cell, new_values[ci])
+                # Row 0 is header, update data rows starting from Row 1
+                for ri, row_data in enumerate(history_rows):
+                    table_row_idx = ri + 1  # Skip header row
+                    if table_row_idx < len(table.rows):
+                        row = table.rows[table_row_idx]
+                        # Columns: ver, 변경일, 변경내용, 작성자, 비고
+                        for ci, cell in enumerate(row.cells):
+                            if ci < len(row_data):
+                                self._update_cell_text(cell, row_data[ci])
+                            else:
+                                self._update_cell_text(cell, "")
                 break
 
         print("[OK] Updated: History slide (template preserved)")
@@ -463,6 +537,35 @@ class DraftifyPPTGenerator:
                     headers.append(header)
         return headers
 
+    def _parse_toc_markdown(self, content: str) -> list[tuple[str, str, list[str]]]:
+        """Parse TOC from markdown content.
+        Returns list of (num, title, sub_items)."""
+        toc_items = []
+        current_item = None
+        current_subs = []
+
+        for line in content.split('\n'):
+            line_stripped = line.strip()
+
+            # Match numbered items: 1. Title or ## 1. Title
+            num_match = re.match(r'^(?:##\s*)?(\d+)\.\s+(.+)', line_stripped)
+            if num_match:
+                # Save previous item
+                if current_item:
+                    toc_items.append((current_item[0], current_item[1], current_subs))
+                current_item = (f"{int(num_match.group(1)):02d}", num_match.group(2).strip())
+                current_subs = []
+            # Match sub-items: - item or   - item (indented)
+            elif line_stripped.startswith('- ') or line_stripped.startswith('* '):
+                if current_item:
+                    current_subs.append(line_stripped[2:].strip())
+
+        # Save last item
+        if current_item:
+            toc_items.append((current_item[0], current_item[1], current_subs))
+
+        return toc_items
+
     def add_contents_slide(self) -> None:
         """Add contents/TOC slide matching template style with sub-items."""
         slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
@@ -479,18 +582,23 @@ class DraftifyPPTGenerator:
                           font_size=16, font_color=COLOR_WHITE,
                           fill_color=COLOR_PRIMARY)
 
-        # Extract sub-items from sections
-        policy_subs = self._extract_section_headers("policy")
-        process_subs = self._extract_section_headers("process")
-        screen_subs = self._extract_section_headers("screen")
+        # Try to use 03-table-of-contents.md first
+        toc_items = []
+        if self.sections.get("toc"):
+            toc_items = self._parse_toc_markdown(self.sections["toc"])
 
-        # Build TOC items with sub-items
-        toc_items = [
-            ("01", "용어 정의", []),
-            ("02", "정책 정의", policy_subs),
-            ("03", "프로세스 흐름도", process_subs),
-            ("04", "화면상세", screen_subs),
-        ]
+        # Fallback: build TOC from section headers
+        if not toc_items:
+            policy_subs = self._extract_section_headers("policy")
+            process_subs = self._extract_section_headers("process")
+            screen_subs = self._extract_section_headers("screen")
+
+            toc_items = [
+                ("01", "용어 정의", []),
+                ("02", "정책 정의", policy_subs),
+                ("03", "프로세스 흐름도", process_subs),
+                ("04", "화면상세", screen_subs),
+            ]
 
         # Calculate total height needed
         total_items = len(toc_items)
@@ -536,8 +644,32 @@ class DraftifyPPTGenerator:
 
         print("[OK] Added: Contents slide")
 
+    def _parse_divider_markdown(self, content: str) -> dict[str, str]:
+        """Parse section divider titles from markdown content.
+        Returns dict mapping section number to title, e.g., {"01": "용어 정의"}."""
+        titles = {}
+        for line in content.split('\n'):
+            line = line.strip()
+            # Match: ## 01 Title or ## 01. Title
+            match = re.match(r'^##\s*(\d+)\.?\s+(.+)', line)
+            if match:
+                num = f"{int(match.group(1)):02d}"
+                titles[num] = match.group(2).strip()
+        return titles
+
+    def _get_divider_title(self, section_num: str, default_title: str) -> str:
+        """Get section divider title from 04-section-divider.md or use default."""
+        if not hasattr(self, '_divider_titles'):
+            self._divider_titles = {}
+            if self.sections.get("divider"):
+                self._divider_titles = self._parse_divider_markdown(self.sections["divider"])
+        return self._divider_titles.get(section_num, default_title)
+
     def add_section_divider(self, section_num: str, title: str, subtitles: list = None) -> None:
         """Add section divider slide with purple bar (template style)."""
+        # Try to get title from 04-section-divider.md
+        title = self._get_divider_title(section_num, title)
+
         slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_SECTION))
 
         # Main section bar (purple rounded rectangle)
@@ -1367,6 +1499,19 @@ class DraftifyPPTGenerator:
                 border.set('w', '0')
                 etree.SubElement(border, qn('a:noFill'))
 
+    def _parse_references_markdown(self, content: str) -> list[str]:
+        """Parse references from markdown content."""
+        refs = []
+        for line in content.split('\n'):
+            line = line.strip()
+            # Match bullet points: - item or * item
+            if line.startswith('- ') or line.startswith('* '):
+                refs.append(line[2:].strip())
+            # Match numbered items: 1. item
+            elif re.match(r'^\d+\.\s+', line):
+                refs.append(re.sub(r'^\d+\.\s+', '', line).strip())
+        return refs
+
     def add_reference_slide(self) -> None:
         """Add reference slide."""
         slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_CONTENT))
@@ -1374,20 +1519,44 @@ class DraftifyPPTGenerator:
         self._add_text_box(slide, 0.35, 0.55, 3.0, 0.64,
                           "참고 문헌", font_size=24, bold=True)
 
-        refs = self.analyzed_data.get("references", [])
+        # Try to use 09-references.md first, fallback to analyzed_data
+        refs = []
+        if self.sections.get("references"):
+            refs = self._parse_references_markdown(self.sections["references"])
+
+        if not refs:
+            refs = self.analyzed_data.get("references", [])
+
         ref_text = "\n".join([f"• {ref}" for ref in refs]) if refs else "• 자동 생성된 기획서\n• Draftify 크롤링 데이터 기반"
 
         self._add_text_box(slide, 0.51, 1.5, 12.42, 4.0, ref_text, font_size=12)
 
         print("[OK] Added: Reference slide")
 
+    def _parse_eod_markdown(self, content: str) -> str:
+        """Parse EOD text from markdown content."""
+        for line in content.split('\n'):
+            line = line.strip()
+            # Match H1: # End of Document
+            if line.startswith('# '):
+                return line[2:].strip()
+            # Match plain text (non-empty, non-header)
+            if line and not line.startswith('#'):
+                return line
+        return "End of document"
+
     def add_eod_slide(self) -> None:
         """Add end of document slide."""
         slide = self.prs.slides.add_slide(self._get_layout(LAYOUT_BLANK))
 
-        # Centered "End of document" text (from template: 3.34, 3.14)
+        # Try to use 10-eod.md first, fallback to default
+        eod_text = "End of document"
+        if self.sections.get("eod"):
+            eod_text = self._parse_eod_markdown(self.sections["eod"])
+
+        # Centered EOD text (from template: 3.34, 3.14)
         self._add_text_box(slide, 3.34, 3.14, 6.82, 0.61,
-                          "End of document",
+                          eod_text,
                           font_size=28, bold=True, font_color=COLOR_GRAY,
                           align=PP_ALIGN.CENTER)
 
