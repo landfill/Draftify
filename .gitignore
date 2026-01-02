@@ -35,3 +35,6 @@ draftify-ppt.zip
 *.pptx
 !.claude/skills/draftify-ppt/assets/*.pptx
 !draftify-ppt/assets/*.pptx
+
+# Auto Claude data directory
+.auto-claude/
