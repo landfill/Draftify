@@ -11,37 +11,37 @@
 
 ```
 outputs/
-??? todo-app/                    # ???? A
-?   ??? screenshots/
-?   ?   ??? screen-001.png
-?   ?   ??? screen-002.png
-?   ??? analysis/
-?   ?   ??? crawling-result.json
-?   ?   ??? analyzed-structure.json
-?   ??? sections/
-?   ?   ??? 01-cover.md
-?   ?   ??? 02-revision-history.md
-?   ?   ??? 03-table-of-contents.md
-?   ?   ??? 04-section-divider.md
-?   ?   ??? 05-glossary.md
-?   ?   ??? 06-policy-definition.md
-?   ?   ??? 07-process-flow.md
-?   ?   ??? 08-screen-definition.md
-?   ?   ??? 09-references.md
-?   ?   ??? 10-eod.md
-?   ?   ??? ...
-?   ??? validation/
-?   ?   ??? validation-report.md
-?   ??? logs/
-?   ?   ??? phase1.log
-?   ?   ??? errors.log
-?   ??? <project>-draft-V{version}.pptx
-?
-??? blog-mvp/                    # ???? B
-?   ??? ...
-?
-??? ecommerce/                   # ???? C
-    ??? ...
++-- todo-app/                      # Project A
+|   +-- screenshots/
+|   |   +-- screen-001.png
+|   |   +-- screen-002.png
+|   +-- analysis/
+|   |   +-- crawling-result.json
+|   |   +-- analyzed-structure.json
+|   +-- sections/
+|   |   +-- 01-cover.md
+|   |   +-- 02-revision-history.md
+|   |   +-- 03-table-of-contents.md
+|   |   +-- 04-section-divider.md
+|   |   +-- 05-glossary.md
+|   |   +-- 06-policy-definition.md
+|   |   +-- 07-process-flow.md
+|   |   +-- 08-screen-definition.md
+|   |   +-- 09-references.md
+|   |   +-- 10-eod.md
+|   |   +-- ...
+|   +-- validation/
+|   |   +-- validation-report.md
+|   +-- logs/
+|   |   +-- phase1.log
+|   |   +-- errors.log
+|   +-- <project>-draft-V{version}.pptx
+|
++-- blog-mvp/                      # Project B
+|   +-- ...
+|
++-- ecommerce/                     # Project C
+    +-- ...
 ```
 
 
