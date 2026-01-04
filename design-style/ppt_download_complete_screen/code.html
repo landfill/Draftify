@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Draftify - Download Ready</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "primary-dark": "#6a2ec2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e1629",
+                        "success": "#58cc02", // Duolingo-style green
+                        "success-dark": "#46a302",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'floating': '0 10px 40px -10px rgba(0,0,0,0.1)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d8cee8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #833cf6;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#130d1c] dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex items-center justify-between border-b border-[#ece7f4] dark:border-[#2d243a] bg-surface-light/90 dark:bg-surface-dark/90 px-6 py-4 backdrop-blur-md md:px-10">
+<div class="flex items-center gap-4">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">auto_awesome_motion</span>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-tight text-[#130d1c] dark:text-white">Draftify</h2>
+</div>
+<div class="hidden flex-1 justify-end gap-8 md:flex">
+<nav class="flex items-center gap-8">
+<a class="text-sm font-medium text-[#69499c] dark:text-[#a892ce] hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-[#69499c] dark:text-[#a892ce] hover:text-primary transition-colors" href="#">History</a>
+<a class="text-sm font-medium text-[#69499c] dark:text-[#a892ce] hover:text-primary transition-colors" href="#">Templates</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex size-10 items-center justify-center rounded-full bg-[#f0ebf5] dark:bg-[#2d243a] text-[#130d1c] dark:text-white hover:bg-[#e0d6eb] transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white dark:border-[#2d243a] shadow-sm" data-alt="User profile avatar showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBamuJWP0GKzt0xit1t_FVGzlR0JVEivhT9__Y-g9WLEuP3IpqJDZiGjpHeYAGAaYpAuEbzFcUQ36FeEmoR3fNclIOVv3zRpXpknSJ1IX1B_U-SC_pB4dYMuYmoPXd5t2iR2LCL0k71L_ugN2B7yQGTqF66HQe6YUDooI9RdfSWSx3mNv0FIweSIAD0HgnSZTV-2nh-6cZRYzaqTVBjarJzmsqgOL8jYEE-vHbNKFtOMh6TNaj-ec4no8Vc4FRtB381xslwYnFMV7E");'>
+</div>
+</div>
+</div>
+<!-- Mobile Menu Icon -->
+<button class="md:hidden flex items-center justify-center p-2 text-[#130d1c] dark:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="layout-container flex grow flex-col items-center justify-center py-8 px-4 md:px-6">
+<div class="w-full max-w-[800px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+<!-- Success Card -->
+<div class="overflow-hidden rounded-3xl bg-surface-light dark:bg-surface-dark shadow-floating border border-[#ece7f4] dark:border-[#2d243a]">
+<!-- Decorative Header Bar -->
+<div class="h-3 w-full bg-success"></div>
+<div class="p-8 md:p-12">
+<!-- Hero Section -->
+<div class="mb-10 flex flex-col items-center text-center">
+<div class="mb-6 flex size-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 text-success ring-8 ring-green-50 dark:ring-green-900/10">
+<span class="material-symbols-outlined text-5xl font-bold">check_circle</span>
+</div>
+<h1 class="mb-3 text-3xl font-black tracking-tight text-[#130d1c] dark:text-white md:text-4xl">
+                                Your Presentation is Ready!
+                            </h1>
+<p class="max-w-lg text-lg text-[#69499c] dark:text-[#a892ce]">
+                                We successfully analyzed your mockups and generated the PRD document.
+                            </p>
+</div>
+<!-- File Preview Card -->
+<div class="mb-10 rounded-2xl border border-[#ece7f4] dark:border-[#2d243a] bg-[#fcfbfd] dark:bg-[#1a1625] p-2 shadow-sm">
+<div class="flex flex-col gap-6 md:flex-row md:items-center">
+<!-- Thumbnail -->
+<div class="relative aspect-video w-full md:w-48 overflow-hidden rounded-xl bg-cover bg-center shadow-inner group cursor-pointer" data-alt="Abstract colorful gradient representing a presentation slide cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAr6FKzBf1o0qgPq8_l8l3feAe5L3uKGheMxLARDhmk2TMXhi3KciIb2WWpxjMzffe38ML15P2nnply731JEEvD-auDyxjCh9AtB2Mhd6xVKNip0OzFlzlEIOGmFG_We134znPJxn9rowosozOeQFpH7LOHCWiamv3mca2H43d1VmVLMpXhW5nhDKJzreTEmsqfhHLJ0waLiT0KSVbOE6_vqR4uizeZHookhVaKgKdG_8lQIVDpWuyUlnvXJ4qNIWmkvqT0Zuzqupo");'>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white drop-shadow-md">zoom_in</span>
+</div>
+</div>
+<!-- File Info -->
+<div class="flex flex-1 flex-col justify-between px-2 pb-2 md:px-0 md:pb-0">
+<div class="mb-4">
+<div class="flex items-center gap-2 mb-1">
+<span class="rounded bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 text-xs font-bold text-orange-600 dark:text-orange-400">PPTX</span>
+<h3 class="line-clamp-1 text-lg font-bold text-[#130d1c] dark:text-white" title="Mobile_App_v2_PRD.pptx">Mobile_App_v2_PRD.pptx</h3>
+</div>
+<p class="text-sm font-medium text-[#69499c] dark:text-[#a892ce]">2.4 MB • 12 Slides • Generated just now</p>
+</div>
+<div class="flex gap-3">
+<button class="group flex items-center gap-2 rounded-xl bg-[#ece7f4] dark:bg-[#2d243a] px-4 py-2 text-sm font-bold text-[#130d1c] dark:text-white transition-all hover:bg-[#dcd5e8] dark:hover:bg-[#3d324d]">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+                                            Preview
+                                        </button>
+<button class="flex items-center gap-2 rounded-xl bg-[#ece7f4] dark:bg-[#2d243a] px-4 py-2 text-sm font-bold text-[#130d1c] dark:text-white transition-all hover:bg-[#dcd5e8] dark:hover:bg-[#3d324d]">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                                            Edit
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Action Button -->
+<div class="mb-10 flex justify-center">
+<button class="relative flex w-full max-w-sm items-center justify-center gap-3 overflow-hidden rounded-2xl bg-primary px-8 py-4 text-xl font-bold text-white shadow-[0_6px_0_0_#6a2ec2] transition-all active:top-[6px] active:shadow-none hover:bg-[#9152f7]">
+<span class="material-symbols-outlined text-3xl">download</span>
+                                Download PPT
+                            </button>
+</div>
+<!-- Summary & Feedback Split -->
+<div class="grid gap-8 border-t border-[#ece7f4] dark:border-[#2d243a] pt-8 lg:grid-cols-2">
+<!-- Summary Checklist -->
+<div class="flex flex-col gap-4">
+<h4 class="text-sm font-bold uppercase tracking-wider text-[#69499c] dark:text-[#a892ce]">Inside this Document</h4>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-success text-white">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<p class="text-base font-medium text-[#130d1c] dark:text-white">Executive Summary included</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-success text-white">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<p class="text-base font-medium text-[#130d1c] dark:text-white">Feature Specifications drafted</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-success text-white">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<p class="text-base font-medium text-[#130d1c] dark:text-white">UI/UX Analysis completed</p>
+</div>
+<div class="flex items-center gap-3 opacity-50">
+<div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#ece7f4] dark:bg-[#2d243a] text-[#69499c]">
+<span class="material-symbols-outlined text-sm font-bold">close</span>
+</div>
+<p class="text-base font-medium text-[#130d1c] dark:text-white">Competitor Analysis (Skipped)</p>
+</div>
+</div>
+</div>
+<!-- Feedback Module -->
+<div class="flex flex-col gap-4 lg:items-end">
+<h4 class="text-sm font-bold uppercase tracking-wider text-[#69499c] dark:text-[#a892ce]">Rate the quality</h4>
+<div class="flex items-center gap-2 rounded-2xl bg-[#f9f8fc] dark:bg-[#1a1625] p-2 border border-[#ece7f4] dark:border-[#2d243a]">
+<button class="flex size-12 items-center justify-center rounded-xl text-3xl hover:bg-white dark:hover:bg-[#2d243a] hover:shadow-sm transition-all hover:scale-110 active:scale-95" title="Bad">
+                                        😠
+                                    </button>
+<div class="h-8 w-px bg-[#ece7f4] dark:bg-[#2d243a]"></div>
+<button class="flex size-12 items-center justify-center rounded-xl text-3xl hover:bg-white dark:hover:bg-[#2d243a] hover:shadow-sm transition-all hover:scale-110 active:scale-95" title="Okay">
+                                        😐
+                                    </button>
+<div class="h-8 w-px bg-[#ece7f4] dark:bg-[#2d243a]"></div>
+<button class="flex size-12 items-center justify-center rounded-xl text-3xl hover:bg-white dark:hover:bg-[#2d243a] hover:shadow-sm transition-all hover:scale-110 active:scale-95" title="Great">
+                                        😃
+                                    </button>
+</div>
+<a class="mt-2 text-sm font-semibold text-primary hover:underline" href="#">Report an issue</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="mt-8 flex justify-center gap-6">
+<a class="flex items-center gap-2 text-sm font-bold text-[#69499c] dark:text-[#a892ce] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+                        Create New Document
+                    </a>
+<a class="flex items-center gap-2 text-sm font-bold text-[#69499c] dark:text-[#a892ce] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                        Go to Dashboard
+                    </a>
+</div>
+</div>
+</main>
+</div>
+</body></html>

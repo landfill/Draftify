@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Draftify - Process Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#130d1c] dark:text-white min-h-screen flex flex-col overflow-x-hidden transition-colors duration-200">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#ece7f4] dark:border-slate-800 bg-white dark:bg-[#171022] px-4 md:px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-[#130d1c] dark:text-white">
+<div class="size-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">auto_fix_high</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Draftify</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 md:gap-8 items-center">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-sm font-medium hover:text-primary transition-colors text-[#130d1c] dark:text-white" href="#">Dashboard</a>
+<a class="text-sm font-medium hover:text-primary transition-colors text-[#130d1c] dark:text-white" href="#">Templates</a>
+<a class="text-sm font-medium hover:text-primary transition-colors text-[#130d1c] dark:text-white" href="#">Settings</a>
+</div>
+<button class="flex items-center justify-center rounded-xl size-10 bg-[#ece7f4] dark:bg-slate-800 text-[#130d1c] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBLGieKhNhXnPNzMtd9PM4WnaHF-olt28uvQ0Fi9NjBnsWmB3uwBvjCEAjFjjqBmKMbmXUXLRREtTSEbyBIDhgLe4GDFHlQeV6-oumQ0xuGXQZ63dlmzpH88tHvehCXfHVwhXGVch5QtUGh-_zpeB96PKgEay7pVGGpEveueTc7xrxWbdC5WYbQCeoxaaoxdpBZ3l5HFwsbZlwFxp2uElT3YCZNJvIaYgdLZw18RIWHafjBNZX0ep_opucB4QFdYAO9LQKUSav76QM");'></div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-start pt-10 px-4 pb-20 w-full max-w-[1200px] mx-auto">
+<!-- Header Section -->
+<div class="w-full max-w-[960px] flex flex-col gap-3 mb-8 text-center md:text-left">
+<h1 class="text-[#130d1c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Generating your PRD</h1>
+<p class="text-[#69499c] dark:text-slate-400 text-base md:text-lg font-normal leading-normal">Sit tight! Draftify is analyzing your mockup and building your presentation.</p>
+</div>
+<!-- Central Status Card -->
+<div class="w-full max-w-[960px] bg-white dark:bg-[#1e1629] rounded-xl shadow-[0_0_4px_rgba(0,0,0,0.1)] dark:shadow-none border border-[#ece7f4] dark:border-slate-800 overflow-hidden">
+<!-- Horizontal Stepper (Visual Indicator) -->
+<div class="border-b border-[#ece7f4] dark:border-slate-800 bg-[#f9f8fc] dark:bg-[#1e1629] p-6 md:p-8">
+<div class="relative flex justify-between items-center w-full max-w-3xl mx-auto">
+<!-- Progress Line Background -->
+<div class="absolute top-5 left-0 w-full h-1 bg-[#d8cee8] dark:bg-slate-700 -z-0"></div>
+<!-- Progress Line Active (approx 50%) -->
+<div class="absolute top-5 left-0 w-1/2 h-1 bg-primary -z-0 transition-all duration-500"></div>
+<!-- Step 1: Completed -->
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white ring-4 ring-white dark:ring-[#1e1629]">
+<span class="material-symbols-outlined text-xl">check</span>
+</div>
+<span class="text-sm font-semibold text-primary">Crawling</span>
+</div>
+<!-- Step 2: Active -->
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="size-10 rounded-full bg-white dark:bg-[#1e1629] border-2 border-primary flex items-center justify-center text-primary ring-4 ring-white dark:ring-[#1e1629]">
+<span class="material-symbols-outlined text-xl animate-pulse">psychology</span>
+</div>
+<span class="text-sm font-bold text-[#130d1c] dark:text-white">Analysis</span>
+</div>
+<!-- Step 3: Pending -->
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="size-10 rounded-full bg-white dark:bg-[#1e1629] border-2 border-[#d8cee8] dark:border-slate-600 flex items-center justify-center text-[#d8cee8] dark:text-slate-600 ring-4 ring-white dark:ring-[#1e1629]">
+<span class="material-symbols-outlined text-xl">slideshow</span>
+</div>
+<span class="text-sm font-medium text-[#130d1c]/50 dark:text-slate-500">Generation</span>
+</div>
+</div>
+</div>
+<!-- Main Progress Area -->
+<div class="p-8 md:p-12 flex flex-col items-center justify-center text-center gap-8">
+<!-- Central Visual -->
+<div class="relative size-32 hidden md:block">
+<div class="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-75"></div>
+<div class="relative size-32 bg-primary/5 rounded-full flex items-center justify-center border border-primary/10">
+<span class="material-symbols-outlined text-6xl text-primary animate-pulse">psychology</span>
+</div>
+</div>
+<!-- Text & Bar -->
+<div class="w-full max-w-xl flex flex-col gap-4">
+<div class="flex justify-between items-end px-1">
+<h3 class="text-xl font-bold text-[#130d1c] dark:text-white">Analyzing Component Hierarchy</h3>
+<span class="text-primary font-bold tabular-nums">45%</span>
+</div>
+<!-- Progress Bar Component -->
+<div class="h-3 w-full bg-[#d8cee8] dark:bg-slate-700 rounded-lg overflow-hidden">
+<div class="h-full bg-primary rounded-lg transition-all duration-300 ease-out relative" style="width: 45%;">
+<div class="absolute inset-0 bg-white/20"></div>
+</div>
+</div>
+<!-- Log Output -->
+<div class="bg-[#f7f5f8] dark:bg-slate-800 rounded-lg p-4 font-mono text-sm text-left border border-[#ece7f4] dark:border-slate-700 flex flex-col gap-2 min-h-[100px] overflow-y-auto">
+<div class="flex items-center gap-2 text-[#130d1c]/60 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
+<span>Crawling completed: 12/12 pages found.</span>
+</div>
+<div class="flex items-center gap-2 text-[#130d1c] dark:text-slate-200">
+<span class="material-symbols-outlined text-[14px] animate-spin text-primary">progress_activity</span>
+<span>Identifying navigation patterns (5/50 analyzed)...</span>
+</div>
+<div class="flex items-center gap-2 text-[#130d1c]/40 dark:text-slate-500">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+<span>Waiting for structural mapping...</span>
+</div>
+</div>
+</div>
+<!-- Tips -->
+<div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-3 max-w-lg">
+<span class="material-symbols-outlined text-lg">lightbulb</span>
+<span class="text-left">Tip: Draftify can automatically detect and label your form fields in the 'Input Analysis' phase.</span>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="bg-[#f9f8fc] dark:bg-[#1e1629] border-t border-[#ece7f4] dark:border-slate-800 p-6 flex justify-center">
+<button class="text-[#69499c] dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 text-sm font-bold leading-normal tracking-[0.015em] transition-colors flex items-center gap-2 px-6 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+<span class="material-symbols-outlined text-lg">cancel</span>
+                    Cancel Generation
+                </button>
+</div>
+</div>
+<!-- Recent Activity (Contextual) -->
+<div class="w-full max-w-[960px] mt-12">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">history</span>
+<h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">In Queue</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Card 1 -->
+<div class="bg-white dark:bg-[#1e1629] p-4 rounded-xl border border-[#ece7f4] dark:border-slate-800 flex items-center gap-4 opacity-60 grayscale">
+<div class="size-12 rounded-lg bg-[#ece7f4] dark:bg-slate-800 flex items-center justify-center text-[#130d1c] dark:text-white">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="font-bold text-[#130d1c] dark:text-white text-sm">Dashboard Specs</p>
+<p class="text-xs text-[#69499c] dark:text-slate-400">Waiting...</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white dark:bg-[#1e1629] p-4 rounded-xl border border-[#ece7f4] dark:border-slate-800 flex items-center gap-4 opacity-60 grayscale">
+<div class="size-12 rounded-lg bg-[#ece7f4] dark:bg-slate-800 flex items-center justify-center text-[#130d1c] dark:text-white">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="font-bold text-[#130d1c] dark:text-white text-sm">Mobile Flow</p>
+<p class="text-xs text-[#69499c] dark:text-slate-400">Waiting...</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,8 +1,8 @@
 # Draftify 웹 UI 설계
 
-**버전**: 1.4
-**최종 갱신**: 2025-12-29
-**관련 문서**: prd.md, workflow.md
+**버전**: 1.5
+**최종 갱신**: 2026-01-04
+**관련 문서**: prd.md, workflow.md, design-system.md, user-flow.md
 
 ---
 

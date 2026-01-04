@@ -1,13 +1,38 @@
 # Draftify 구현 체크리스트
 
-**버전**: 1.3
-**최종 갱신**: 2025-12-29
+**버전**: 1.4
+**최종 갱신**: 2026-01-04
 
 > **Note**: 이 문서는 구현 체크리스트의 완전한 명세입니다.
 
 ---
 
 ## 구현 단계
+
+### 0단계: 준비 (Pre-implementation)
+**목적**: 구현 시작 전 필수 문서 읽기 및 컨텍스트 이해
+
+#### 필수 읽기 (모든 구현자)
+- [ ] [architecture.md](./architecture.md) - 전체 시스템 구조 이해
+- [ ] [workflow.md](./workflow.md) - Phase 1-4 워크플로우 파악
+- [ ] [error-handling.md](./error-handling.md) - 에러 처리 전략 이해
+- [ ] [auto-draft-guideline.md](./auto-draft-guideline.md) - 출력 문서 표준 규격
+- [ ] [coding-convention.md](./coding-convention.md) - 코딩 규칙 및 AI 협업 가이드
+
+#### UI 구현 시 추가 읽기
+- [ ] [design-system.md](./design-system.md) - 색상, 타이포그래피, UI 컴포넌트
+- [ ] [user-flow.md](./user-flow.md) - 사용자 시나리오 및 화면 전환
+- [ ] [ui-design.md](./ui-design.md) - 웹 UI 설계 상세
+
+#### 백엔드 구현 시 추가 읽기
+- [ ] [crawling-strategy.md](./crawling-strategy.md) - Tier 1-3 크롤링 전략
+- [ ] [schemas.md](./schemas.md) - 데이터 스키마 정의
+
+#### 검증 완료
+- [ ] design-index.md의 "빠른 시작" 섹션 읽기
+- [ ] 프로젝트 구조 이해 완료
+
+---
 
 ### 1단계: 환경 설정
 - [ ] Chrome DevTools MCP 설치 및 설정

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Draftify - New Project</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#833cf6",
+              "primary-dark": "#6c2bd9", 
+              "background-light": "#f9f8fc",
+              "background-dark": "#171022",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1f162d",
+              "border-light": "#ece7f4",
+              "border-dark": "#2d243a",
+              "text-main": "#130d1c",
+              "text-muted": "#69499c",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+            boxShadow: {
+                'button': '0px 4px 0px 0px #6c2bd9',
+                'button-active': '0px 0px 0px 0px #6c2bd9',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom styles for the 3D button effect */
+        .btn-3d {
+            transition: all 0.1s ease;
+            box-shadow: 0px 4px 0px 0px #5b21b6; /* darker shade of primary */
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px 0px #5b21b6;
+        }
+        
+        .radio-card-input:checked + .radio-card {
+            border-color: #833cf6;
+            background-color: #f5f0ff;
+            color: #833cf6;
+        }
+        .dark .radio-card-input:checked + .radio-card {
+            background-color: #2d1f3f;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display antialiased min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<nav class="border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark sticky top-0 z-50">
+<div class="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 text-primary flex items-center justify-center bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-2xl">auto_stories</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Draftify</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors text-text-main dark:text-gray-300" href="#">Dashboard</a>
+<a class="text-sm font-medium hover:text-primary transition-colors text-text-main dark:text-gray-300" href="#">History</a>
+<a class="text-sm font-medium hover:text-primary transition-colors text-text-main dark:text-gray-300" href="#">Settings</a>
+</div>
+<button class="bg-primary hover:bg-primary-dark text-white text-sm font-bold h-9 px-5 rounded-xl transition-colors">
+                    Log Out
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+<div class="w-full max-w-3xl flex flex-col gap-8">
+<!-- Page Heading -->
+<div class="text-center space-y-3">
+<h2 class="text-3xl md:text-4xl font-black tracking-tight text-text-main dark:text-white">Let's Draft Your Product Spec</h2>
+<p class="text-text-muted dark:text-gray-400 text-lg">Enter your project details below and let AI analyze your mockups.</p>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-xl border border-border-light dark:border-border-dark p-6 md:p-10">
+<form class="flex flex-col gap-8">
+<!-- Project Name Input -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold uppercase tracking-wide text-text-muted dark:text-gray-400 pl-1">Project Name</label>
+<input class="w-full h-14 px-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-main dark:text-white placeholder:text-text-muted dark:placeholder:text-gray-500 focus:border-primary focus:ring-0 text-lg transition-colors" placeholder="e.g., Q3 Mobile App Redesign" type="text"/>
+</div>
+<!-- Mockup URL Input -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold uppercase tracking-wide text-text-muted dark:text-gray-400 pl-1">Mockup URL</label>
+<div class="relative flex w-full">
+<input class="w-full h-14 pl-4 pr-12 rounded-xl border-2 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-main dark:text-white placeholder:text-text-muted dark:placeholder:text-gray-500 focus:border-primary focus:ring-0 text-lg transition-colors" placeholder="e.g., Figma or website link" type="url"/>
+<div class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-text-muted dark:text-gray-400 pointer-events-none">
+<span class="material-symbols-outlined">link</span>
+</div>
+</div>
+<p class="text-xs text-text-muted dark:text-gray-500 pl-1">Supported: Figma, Adobe XD, or any public website URL.</p>
+</div>
+<!-- Document Type Selector -->
+<div class="flex flex-col gap-3">
+<label class="text-sm font-bold uppercase tracking-wide text-text-muted dark:text-gray-400 pl-1">Output Format</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Option 1 -->
+<label class="relative cursor-pointer group">
+<input checked="" class="peer sr-only radio-card-input" name="doc_type" type="radio" value="prd"/>
+<div class="radio-card p-4 rounded-xl border-2 border-border-light dark:border-border-dark hover:border-primary/50 bg-background-light dark:bg-background-dark transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+<span class="material-symbols-outlined text-3xl">description</span>
+<span class="font-bold">PRD</span>
+<span class="text-xs text-text-muted dark:text-gray-500">Requirements &amp; Features</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="relative cursor-pointer group">
+<input class="peer sr-only radio-card-input" name="doc_type" type="radio" value="sdd"/>
+<div class="radio-card p-4 rounded-xl border-2 border-border-light dark:border-border-dark hover:border-primary/50 bg-background-light dark:bg-background-dark transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+<span class="material-symbols-outlined text-3xl">architecture</span>
+<span class="font-bold">SDD</span>
+<span class="text-xs text-text-muted dark:text-gray-500">System Architecture</span>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="relative cursor-pointer group">
+<input class="peer sr-only radio-card-input" name="doc_type" type="radio" value="full"/>
+<div class="radio-card p-4 rounded-xl border-2 border-border-light dark:border-border-dark hover:border-primary/50 bg-background-light dark:bg-background-dark transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+<span class="material-symbols-outlined text-3xl">folder_zip</span>
+<span class="font-bold">Full Suite</span>
+<span class="text-xs text-text-muted dark:text-gray-500">Comprehensive Docs</span>
+</div>
+</label>
+</div>
+</div>
+<!-- File Uploader -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold uppercase tracking-wide text-text-muted dark:text-gray-400 pl-1">Reference Documents (Optional)</label>
+<div class="border-2 border-dashed border-border-light dark:border-gray-600 rounded-xl bg-background-light dark:bg-background-dark p-8 flex flex-col items-center justify-center gap-4 group hover:border-primary/50 transition-colors cursor-pointer">
+<div class="bg-surface-light dark:bg-surface-dark p-3 rounded-full shadow-sm text-primary">
+<span class="material-symbols-outlined text-3xl">cloud_upload</span>
+</div>
+<div class="text-center">
+<p class="text-sm font-bold text-text-main dark:text-white">Click to upload or drag and drop</p>
+<p class="text-xs text-text-muted dark:text-gray-400 mt-1">PDF, DOCX, or TXT (max 10MB)</p>
+</div>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-4">
+<button class="btn-3d w-full h-14 bg-primary text-white text-lg font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark" type="button">
+<span class="material-symbols-outlined">rocket_launch</span>
+                            Start Crawling
+                        </button>
+</div>
+</form>
+</div>
+<!-- Footer Links -->
+<div class="flex justify-center gap-6 text-sm text-text-muted dark:text-gray-500">
+<a class="hover:underline" href="#">Documentation</a>
+<a class="hover:underline" href="#">Support</a>
+<a class="hover:underline" href="#">Terms</a>
+</div>
+</div>
+</main>
+</body></html>

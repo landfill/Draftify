@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Draftify - Mockups to Docs in Minutes</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "primary-dark": "#6c2bd9",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#2a2435",
+                        "text-main": "#130d1c",
+                        "text-muted": "#69499c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(131, 60, 246, 0.1)",
+                        "glow": "0 0 15px rgba(131, 60, 246, 0.3)",
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white transition-colors duration-200 overflow-x-hidden">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-surface-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="px-6 md:px-10 py-4 flex items-center justify-between mx-auto max-w-7xl">
+<div class="flex items-center gap-3 text-text-main dark:text-white">
+<div class="flex items-center justify-center size-10 bg-primary rounded-xl text-white">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">Draftify</h2>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Features</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">About</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="hidden md:flex cursor-pointer items-center justify-center rounded-xl h-10 px-5 text-sm font-bold text-text-main dark:text-white hover:bg-gray-100 dark:hover:bg-surface-dark transition-colors">
+                        Log In
+                    </button>
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-10 px-6 bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-soft transition-all hover:scale-105 active:scale-95">
+                        Get Started
+                    </button>
+</div>
+</div>
+</header>
+<main class="flex-1">
+<!-- Hero Section -->
+<section class="relative pt-16 pb-20 px-6 md:px-10 lg:pt-24 lg:pb-32 overflow-hidden">
+<div class="mx-auto max-w-7xl">
+<div class="grid lg:grid-cols-2 gap-12 items-center">
+<!-- Hero Content -->
+<div class="flex flex-col gap-8 max-w-2xl lg:max-w-none z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 w-fit">
+<span class="flex size-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold text-primary uppercase tracking-wide">New: AI Slide Generator</span>
+</div>
+<h1 class="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight text-text-main dark:text-white">
+                                Stop writing docs. <br/>
+<span class="text-primary">Start designing.</span>
+</h1>
+<p class="text-lg md:text-xl text-text-muted dark:text-gray-400 font-medium leading-relaxed max-w-lg">
+                                Paste your mockup URL. Let our AI write the PRD, SDD, and PPT slides for you in minutes.
+                            </p>
+<!-- Input Action -->
+<div class="flex flex-col sm:flex-row items-stretch gap-2 w-full max-w-lg mt-2 p-2 bg-white dark:bg-surface-dark rounded-2xl border border-gray-200 dark:border-gray-700 shadow-soft">
+<div class="flex items-center pl-4 flex-1">
+<span class="material-symbols-outlined text-gray-400">link</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-text-main dark:text-white placeholder:text-gray-400 text-base py-3 px-3" placeholder="Paste your Figma or design URL..."/>
+</div>
+<button class="flex shrink-0 cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-md">
+                                    Generate Docs
+                                </button>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-500 pl-2">
+                                No credit card required · Free for first 3 projects
+                            </p>
+</div>
+<!-- Hero Image/Visual -->
+<div class="relative lg:h-[600px] w-full flex items-center justify-center">
+<!-- Abstract decoration blob -->
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-pink-500/20 rounded-full blur-3xl opacity-60"></div>
+<!-- Main Image Container -->
+<div class="relative w-full aspect-square lg:aspect-auto h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark group">
+<img alt="Clean workspace with digital design tools and documents on screen" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoqjWnxR6FqZDt2ds9XUqmrYrDqThSeOkToagi7Gp2RRZWDEJpr_7bVCxTJVX70bmsFHpg5coNnDN3iHjAgbXovSyhIMtQw62b1IcI78S8I0sAQdPKNcpVR6CVDFNjX_FpF9k-Xm8h6PmJYb001waxSsvrmEccsFRcOA-pcSs6WDcA0QowIEcVPre2ex712DuyTpzJYP7q3dY9uz8F2Gog2tngVwjGxfAJv0bLTKHZTowsywNrS0qzhI6I08_aBtPkm_K-mhfbhAc"/>
+<!-- Floating UI Element Simulation -->
+<div class="absolute bottom-8 left-8 right-8 bg-white/90 dark:bg-black/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg flex items-center gap-4 animate-[bounce_3s_infinite]">
+<div class="size-10 rounded-lg bg-green-500 flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main dark:text-white">PRD Generated</span>
+<span class="text-xs text-gray-500">Just now · 12 pages created</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof -->
+<section class="py-10 border-y border-gray-100 dark:border-gray-800 bg-white dark:bg-surface-dark/50">
+<div class="mx-auto max-w-7xl px-6 md:px-10 text-center">
+<p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-8">Trusted by Product Teams at</p>
+<div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<!-- Placeholder Logos -->
+<div class="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined">change_history</span> Acme Corp
+                        </div>
+<div class="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined">hexagon</span> HexaLabs
+                        </div>
+<div class="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined">diamond</span> GemTech
+                        </div>
+<div class="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined">bolt</span> FastCo
+                        </div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-20 px-6 md:px-10 bg-background-light dark:bg-background-dark">
+<div class="mx-auto max-w-7xl">
+<div class="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+<!-- Feature Text -->
+<div class="flex flex-col gap-6 lg:w-1/3 sticky top-24">
+<h2 class="text-3xl md:text-4xl font-black leading-tight text-text-main dark:text-white">
+                                Generate documents instantly.
+                            </h2>
+<p class="text-lg text-gray-600 dark:text-gray-400">
+                                Draftify analyzes your screens and generates the documents you need to hand off to engineering. No more late nights formatting slides.
+                            </p>
+<button class="flex w-fit items-center gap-2 text-primary font-bold hover:underline mt-2">
+                                See how it works <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Feature Cards Grid -->
+<div class="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Card 1 -->
+<div class="group p-6 rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-soft transition-all duration-300 hover:-translate-y-1">
+<div class="size-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<h3 class="text-xl font-bold mb-2 dark:text-white">PRD Generation</h3>
+<p class="text-gray-500 dark:text-gray-400">Automatically generated Product Requirement Documents based on UI flow and user journey analysis.</p>
+</div>
+<!-- Card 2 -->
+<div class="group p-6 rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-soft transition-all duration-300 hover:-translate-y-1">
+<div class="size-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">schema</span>
+</div>
+<h3 class="text-xl font-bold mb-2 dark:text-white">SDD Creation</h3>
+<p class="text-gray-500 dark:text-gray-400">System Design Documents created from component analysis, mapping frontend states to backend logic.</p>
+</div>
+<!-- Card 3 -->
+<div class="group p-6 rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-soft transition-all duration-300 hover:-translate-y-1 md:col-span-2">
+<div class="size-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">co_present</span>
+</div>
+<h3 class="text-xl font-bold mb-2 dark:text-white">PPT Formatting</h3>
+<p class="text-gray-500 dark:text-gray-400">Ready-to-present PowerPoint slides for stakeholder meetings. Includes flow diagrams, user stories, and feature breakdowns automatically laid out.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Showcase -->
+<section class="py-20 px-6 md:px-10 bg-white dark:bg-surface-dark/30">
+<div class="mx-auto max-w-7xl">
+<div class="text-center mb-12">
+<h2 class="text-3xl font-black mb-4 dark:text-white">From Design to Documentation</h2>
+<p class="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">See how Draftify transforms your raw design files into structured, professional documentation.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 h-96 md:h-[500px]">
+<!-- Input Image -->
+<div class="relative md:col-span-2 h-full rounded-2xl overflow-hidden group">
+<div class="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold uppercase">Input: Mockup</div>
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Colorful abstract UI dashboard mockup showing charts and data tables" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtjc0pGsPFr_AwbEDbAXUvo6sS_jNxaR6nyAjsOasnN8ZwXEkbTMATNcELxRt6mARU4kL_HxxkUr_Zd24DuK_CnZV105sSOawSPO6VuNDxL9RtPyHNC9b0Zp2XH7B-M54wSfy_dRX0VoOS6bVqJUXpHcLkZnYKRRIeEYk29hJ9I9U7rzKYF4_2xIioHqamBjq72xE39s5CT0E_oD40ekjc9Dy0dhEqu2NO96-bAdHxL5V89LDJUNt-9Bdo4GELvTzwdHl443D6KPk');">
+</div>
+</div>
+<!-- Output Stack -->
+<div class="flex flex-col gap-4 h-full">
+<div class="relative flex-1 rounded-2xl overflow-hidden group">
+<div class="absolute top-4 left-4 z-10 bg-primary/80 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold uppercase">Output: PRD</div>
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Clean text document with bullet points and structured headings" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA7l4MXt7p-jQO8OC38vtpCPB4eURdE8SZ8dSZNJqbnrpPHxcZp_dRT6pcDJaBEWdAFEoRdhSiujK4lxBL45eZHkYprf0SNd2ASeSp--86_P8z_kf9cc46Y983XF7FOeBqM16Jg2zt5yG1YwjOA1CHBTMrKb_5e7_vDGi2D-RtoR7uZQPMN2Q4VWAv137AlANJvuej2iaNDzofxndYx4RM3069maJX6Hb5D0C0tgrsFA1ORaKws-BNTuJYCINtY6gev7ZyYXxw5vj0');">
+</div>
+</div>
+<div class="relative flex-1 rounded-2xl overflow-hidden group">
+<div class="absolute top-4 left-4 z-10 bg-orange-500/80 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold uppercase">Output: PPT</div>
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Presentation slide showing a flow chart and summary text" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD24BTzy1m_UItOZf8CjsosEXPlToB6saQgifrqeZDPkp0DKvx_hDoxnJ3Vp-UZehpWfOAy5M9r3bD1R44tm4xppkJXXD6xNVvF_lk5XwVHSJ6ndGxV_wA8vIyVBLp7g6tG4IFNr7Q39HcdSmANu67mGJ9Yep1wJnCUhXP67hj9k6H030r5VaWEo3-N4-IBXOrruMEBPVHhJrOBCJw1ofyMCjWC749c3TDAYXsevvcyptIHJdy0U6b3iZDELe3DK2YgrUdlq7MhrTQ');">
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-24 px-6 md:px-10">
+<div class="mx-auto max-w-5xl bg-primary rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
+<!-- Background Decoration -->
+<div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+<div class="absolute -top-24 -left-24 size-64 bg-white rounded-full blur-3xl"></div>
+<div class="absolute -bottom-24 -right-24 size-64 bg-pink-400 rounded-full blur-3xl"></div>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-6">
+<h2 class="text-3xl md:text-5xl font-black text-white tracking-tight">Ready to streamline your workflow?</h2>
+<p class="text-primary-100 text-lg max-w-xl text-white/90">Join 10,000+ product managers who are saving hours every week with Draftify.</p>
+<div class="flex flex-col sm:flex-row gap-4 mt-4 w-full justify-center">
+<button class="bg-white text-primary hover:bg-gray-50 font-bold py-4 px-8 rounded-xl shadow-lg transition-transform hover:scale-105 min-w-[200px]">
+                                Start for Free
+                            </button>
+<button class="bg-transparent border-2 border-white/30 text-white hover:bg-white/10 font-bold py-4 px-8 rounded-xl transition-colors min-w-[200px]">
+                                View Pricing
+                            </button>
+</div>
+<p class="text-xs text-white/60 mt-4">No credit card required for trial.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white dark:bg-surface-dark py-12 px-6 md:px-10 border-t border-gray-200 dark:border-gray-800">
+<div class="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="size-6 bg-primary rounded-lg"></div>
+<span class="font-bold text-text-main dark:text-white">Draftify</span>
+</div>
+<div class="flex gap-8 text-sm text-gray-500 dark:text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+<div class="text-sm text-gray-400">
+                    © 2023 Draftify Inc.
+                </div>
+</div>
+</footer>
+</div>
+</body></html>

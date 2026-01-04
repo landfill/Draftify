@@ -113,3 +113,174 @@ Draftify의 전체 설계 문서는 **컨텍스트 효율성**을 위해 주제�
    - Validate IDs and references
    - Detect duplicates/sequencing
 
+
+---
+
+## 구현 가이드 (Implementation Guides)
+
+### 5. [design-system.md](./design-system.md)
+**내용**: UI/UX 디자인 시스템
+- 색상 팔레트 (Duolingo 스타일: 밝고 친절)
+- 타이포그래피 스케일 (한글 최적화)
+- UI 컴포넌트 (Button, Input, Progress, Alert, Card)
+- i18n 가이드라인 (한글화 규칙, 번역 파일 구조)
+- 화면별 디자인 레퍼런스 (`design-style/` 활용법)
+
+**언제 읽나**: 웹 UI 구현 시, 디자인 시스템을 따라야 할 때
+
+---
+
+### 6. [user-flow.md](./user-flow.md)
+**내용**: 사용자 흐름도
+- Mermaid 다이어그램으로 시각화된 전체 흐름
+- 시나리오별 단계 정의 (정상 흐름, SPA 크롤링 실패 등)
+- 오류 흐름 (E1-E3: URL 유효성 실패, 크롤링 실패, PPT 생성 실패)
+- 성공/실패 분기 정리
+
+**언제 읽나**: 사용자 시나리오를 이해하거나 UI 흐름을 구현할 때
+
+---
+
+### 7. [coding-convention.md](./coding-convention.md)
+**내용**: 코딩 컨벤션 및 AI 협업 가이드
+- AI 소통 원칙 (프롬프트 엔지니어링 템플릿)
+- 명명 규칙 (PascalCase, camelCase, kebab-case)
+- TypeScript 작성 규칙
+- Git 커밋 규칙
+- i18n 코딩 규칙
+- 보안 체크리스트
+
+**언제 읽나**: 코드 작성 시, AI 협업 프롬프트 작성 시, 코드 리뷰 시
+
+---
+
+## 상세 기술 문서
+
+### 8. [crawling-strategy.md](./crawling-strategy.md)
+**내용**: Phase 1 크롤링 전략
+- Tier 1-3 크롤링 전략
+- Record mode (사용자가 직접 녹화)
+- URL 정규화 및 우선순위
+
+**언제 읽나**: Phase 1 크롤링 구현 시
+
+---
+
+### 9. [schemas.md](./schemas.md)
+**내용**: 데이터 스키마 정의
+- crawling-result.json 스키마
+- analyzed-structure.json 스키마
+- 섹션별 출력 형식
+
+**언제 읽나**: 데이터 구조를 이해하거나 JSON 파일을 다룰 때
+
+---
+
+### 10. [implementation-checklist.md](./implementation-checklist.md)
+**내용**: 구현 체크리스트
+- 우선순위별 구현 순서
+- 단계별 검증 방법
+
+**언제 읽나**: 구현 계획 수립 시, 진행 상황 추적 시
+
+---
+
+### 11. [edge-cases.md](./edge-cases.md)
+**내용**: 엣지 케이스 핸들링
+- 14가지 엣지 케이스 시나리오
+- 각 케이스별 대응 방법
+
+**언제 읽나**: 예외 상황 처리 구현 시
+
+---
+
+### 12. [tech-stack.md](./tech-stack.md)
+**내용**: 기술 스택 선택 및 근거
+- Chrome DevTools MCP
+- LLM 선택 (GLM/Gemini)
+- 기술별 벤더 락인 리스크
+
+**언제 읽나**: 기술 스택을 이해하거나 변경을 고려할 때
+
+---
+
+### 13. [config.md](./config.md)
+**내용**: 설정 파일 명세
+- Config schema
+- 환경 변수
+
+**언제 읽나**: 설정 파일을 다룰 때
+
+---
+
+### 14. [logging.md](./logging.md)
+**내용**: 로깅 전략
+- 로그 레벨 및 형식
+- 디버깅 가이드
+
+**언제 읽나**: 로깅을 구현하거나 디버깅 시
+
+---
+
+### 15. [project-management.md](./project-management.md)
+**내용**: 프로젝트 관리
+- 출력 디렉토리 구조
+- 프로젝트 명명 규칙
+
+**언제 읽나**: 프로젝트 구조를 이해하거나 파일 관리 시
+
+---
+
+### 16. [ui-design.md](./ui-design.md)
+**내용**: 웹 UI 설계
+- 화면 구성 (입력, 진행, 완료)
+- 화면 전환 흐름
+- UI 상태 표시
+
+**언제 읽나**: 웹 UI 구현 시 (design-system.md와 함께 참고)
+
+---
+
+### 17. [record-mode-design.md](./record-mode-design.md)
+**내용**: Record mode 설계
+- 사용자가 브라우저에서 직접 페이지 녹화
+- 크롤링 실패 시 대안
+
+**언제 읽나**: Record mode 구현 시
+
+---
+
+## 레거시 문서
+
+### [../archive/service-design.md](../archive/service-design.md)
+**상태**: 아카이브됨
+**내용**: 원본 모놀리식 설계 문서
+**용도**: 참고용 (실제 구현은 위 분리된 문서들을 따름)
+
+---
+
+## 문서 읽기 가이드
+
+### 🚀 빠른 시작 (Quick Start)
+처음 프로젝트를 접하는 경우:
+1. [architecture.md](./architecture.md) - 전체 구조 파악
+2. [workflow.md](./workflow.md) - Phase별 흐름 이해
+3. [auto-draft-guideline.md](./auto-draft-guideline.md) - 출력 형식 확인
+
+### 💻 구현 시 (Implementation)
+코드를 작성하는 경우:
+1. [implementation-checklist.md](./implementation-checklist.md) - 우선순위 확인
+2. [coding-convention.md](./coding-convention.md) - 코딩 규칙 준수
+3. 해당 에이전트 문서 (agents/*.md) - 에이전트별 로직
+4. [error-handling.md](./error-handling.md) - 에러 처리
+5. [design-system.md](./design-system.md) - UI 구현 시
+
+### 🐛 디버깅 시 (Debugging)
+문제가 발생한 경우:
+1. [logging.md](./logging.md) - 로그 확인 방법
+2. [edge-cases.md](./edge-cases.md) - 엣지 케이스 확인
+3. [error-handling.md](./error-handling.md) - 에러 복구 전략
+
+---
+
+**문서 끝**
