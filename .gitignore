@@ -30,7 +30,6 @@ __pycache__/
 *.pyc
 
 # 임시
-draft-ppt-skill/
 draftify-ppt.zip
 *.pptx
 !.claude/skills/draftify-ppt/assets/*.pptx

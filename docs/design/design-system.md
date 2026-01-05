@@ -15,8 +15,8 @@
 
 | 역할 | Token | Light | Dark | 사용 예시 |
 |------|-------|-------|------|-----------|
-| **Primary** | `color-primary` | `#3B82F6` (Blue 500) | `#2563EB` (Blue 600) | 주요 버튼, 링크 |
-| **Secondary** | `color-secondary` | `#8B5CF6` (Purple 500) | `#7C3AED` (Purple 600) | 보조 버튼, 강조 |
+| **Primary** | `color-primary` | `#833CF6` (Purple 500) | `#6C2BD9` (Purple 600) | 주요 버튼, 링크 |
+| **Secondary** | `color-secondary` | `#3B82F6` (Blue 500) | `#2563EB` (Blue 600) | 보조 버튼, 강조 |
 | **Success** | `color-success` | `#22C55E` (Green 500) | `#16A34A` (Green 600) | 완료 상태, 성공 |
 | **Warning** | `color-warning` | `#F59E0B` (Amber 500) | `#D97706` (Amber 600) | 경고, 진행 중 |
 | **Error** | `color-error` | `#EF4444` (Red 500) | `#DC2626` (Red 600) | 에러, 실패 |
@@ -30,8 +30,8 @@
 | 의미 | 색상 | 사용 예시 |
 |------|------|-----------|
 | 크롤링 중 | `color-warning` (Amber) | "페이지 수집 중..." |
-| 분석 중 | `color-primary` (Blue) | "AI 분석 중..." |
-| 생성 중 | `color-secondary` (Purple) | "기획서 생성 중..." |
+| 분석 중 | `color-primary` (Purple) | "AI 분석 중..." |
+| 생성 중 | `color-secondary` (Blue) | "기획서 생성 중..." |
 | 완료 | `color-success` (Green) | "PPT 다운로드" |
 | 실패 | `color-error` (Red) | "일부 페이지 실패" |
 
@@ -43,7 +43,7 @@
 
 | 용도 | 한글 | 영문 | 대체 |
 |------|------|------|------|
-| **본문** | `-apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif` | `system-ui, -apple-system, sans-serif` | |
+| **본문** | `"Inter", -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif` | `"Inter", system-ui, -apple-system, sans-serif` | |
 | **코드** | `"SF Mono", "Monaco", "Inconsolata", "D2Coding", monospace` | `'SF Mono', 'Monaco', 'Inconsolata', monospace` | |
 | **강조** | 위와 동일 (Bold 700) | 위와 동일 (Bold 700) | |
 
@@ -243,12 +243,12 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#3B82F6',
-          dark: '#2563EB',
+          DEFAULT: '#833CF6',
+          dark: '#6C2BD9',
         },
         secondary: {
-          DEFAULT: '#8B5CF6',
-          dark: '#7C3AED',
+          DEFAULT: '#3B82F6',
+          dark: '#2563EB',
         },
         // ... 기타 색상
       },
@@ -268,8 +268,8 @@ module.exports = {
 
 @layer base {
   :root {
-    --color-primary: #3B82F6;
-    --color-secondary: #8B5CF6;
+    --color-primary: #833CF6;
+    --color-secondary: #3B82F6;
     /* ... 기타 변수 */
   }
 }
